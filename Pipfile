@@ -1,0 +1,19 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+jedi = "*"
+rope = "*"
+autopep8 = "*"
+yapf = "*"
+flake8 = "*"
+pep8 = "*"
+
+[packages]
+nameko = "*"
+sqlalchemy = "*"
+
+[requires]
+python_version = "3.7"

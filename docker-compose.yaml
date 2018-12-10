@@ -1,0 +1,228 @@
+version: '3'
+
+services:
+
+  rabbitmq:
+    image: rabbitmq
+    build: ./queue
+    ports:
+        - "15672:15672"
+        - "5672:5672"
+    restart: always
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # User service configuration
+  # ----------------------------------------
+  # ----------------------------------------
+
+  user_db:
+    build: ./user_service/db
+    ports:
+      - 5432:5432  # expose ports - HOST:CONTAINER
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: exit 0
+    restart: always
+
+  user_service:
+    image: user_service
+    build: ./user_service
+    volumes:
+      - './user_service:/app'
+    environment:
+      - APP_RD_ADDRESS=user_queue:6379
+      - APP_RD_AUTH=password
+      - APP_RD_DBNAME=0
+      - APP_SETTINGS=project.config.DevelopmentConfig
+      - DATABASE_URL=postgresql://postgres:postgres@user_service_db:5432/user_dev?sslmode=disable
+    depends_on:
+      - user_db
+    links:
+      - user_db
+    restart: always
+
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # Inventory service configuration
+  # ----------------------------------------
+  # ----------------------------------------
+
+  inventory_query_db:
+    image: inventory_query_db
+    build: ./inventory_service/query_db/
+    ports:
+      - "5433:5432"
+    restart: always
+
+  inventory_command_db:
+    image: inventory_command_db
+    build: ./inventory_service/command_db/
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: exit 0
+    restart: always
+
+  inventory_queue:
+    image: rabbitmq
+    build: ./inventory_service/queue
+    ports:
+        - "15673:15672"
+        - "5673:5672"
+    restart: always
+
+  inventory_service:
+    image: inventory_service
+    build: ./inventory_service
+    volumes:
+      - './inventory_service:/app'
+    environment:
+      - QUERYBD_HOST=mongodb://inventory_query_db:27017/
+      - QUEUE_HOST=amqp://guest:guest@inventory_queue
+      - COMMANDDB_HOST=postgresql://postgres:postgres@inventory_command_db:5432/news_dev?sslmode=disable
+    depends_on:
+      - inventory_query_db
+      - inventory_command_db
+      - inventory_queue
+    links:
+      - inventory_query_db
+      - inventory_command_db
+      - inventory_queue
+    restart: always
+
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # Payment service configuration
+  # ----------------------------------------
+  # ----------------------------------------
+
+  payment_db:
+    image: payment_db
+    build: ./payment_service/db/
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: exit 0
+    restart: always
+
+  payment_service:
+    image: payment_service
+    build: ./payment_service
+    volumes:
+      - './payment_service:/app'
+    environment:
+      - COMMANDDB_HOST=postgresql://postgres:postgres@payment_db:5432/news_dev?sslmode=disable
+    depends_on:
+      - payment_db
+    links:
+      - payment_db
+    restart: always
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # Search service configuration
+  # ----------------------------------------
+  # ----------------------------------------
+
+  search_db:
+    image: search_db
+    build: ./search_service/db/
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: exit 0
+    restart: always
+
+  search_service:
+    image: search_service
+    build: ./search_service
+    volumes:
+      - './search_service:/app'
+    environment:
+      - COMMANDDB_HOST=postgresql://postgres:postgres@search_db:5432/news_dev?sslmode=disable
+    depends_on:
+      - search_db
+    links:
+      - search_db
+    restart: always
+
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # Checkout service configuration
+  # ----------------------------------------
+  # ----------------------------------------
+
+  checkout_db:
+    image: checkout_db
+    build: ./checkout_service/db/
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: exit 0
+    restart: always
+
+  checkout_service:
+    image: checkout_service
+    build: ./checkout_service
+    volumes:
+      - './checkout_service:/app'
+    environment:
+      - COMMANDDB_HOST=postgresql://postgres:postgres@checkout_db:5432/news_dev?sslmode=disable
+    depends_on:
+      - checkout_db
+    links:
+      - checkout_db
+    restart: always
+
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # Report service configuration
+  # ----------------------------------------
+  # ----------------------------------------
+
+  report_db:
+    image: report_db
+    build: ./report_service/db/
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: exit 0
+    restart: always
+
+  report_service:
+    image: report_service
+    build: ./report_service
+    volumes:
+      - './report_service:/app'
+    environment:
+      - COMMANDDB_HOST=postgresql://postgres:postgres@report_db:5432/news_dev?sslmode=disable
+    depends_on:
+      - report_db
+    links:
+      - report_db
+    restart: always
+
+
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # NGINX configuration
+  # ----------------------------------------
+  # ----------------------------------------
+
+  loadbalance:
+    build: ./nginx
+    ports:
+      - "80:80"
+    links:
+      - users_service
+      - orcherstrator_news_service
+      - recommendation_service
+    restart: always
