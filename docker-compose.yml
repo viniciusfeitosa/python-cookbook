@@ -1,0 +1,67 @@
+version: '3'
+
+services:
+
+  rabbitmq:
+    image: rabbitmq
+    build: ./queue
+    ports:
+        - "15672:15672"
+        - "5672:5672"
+    restart: always
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # Newspaper monolithic application
+  # ----------------------------------------
+  # ----------------------------------------
+
+  newspaper_database:
+    build: ./database
+    ports:
+      - 5432:5432  # expose ports - HOST:CONTAINER
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - 'postgres-data:/var/lib/postgresql/data/'
+    healthcheck:
+      test: exit 0
+    restart: always
+
+  my_newspaper:
+    image: my_newspaper
+    build: ./monolithic_application
+    volumes:
+      - './monolithic_application:/app'
+    environment:
+      - DB_NAME=newspaper_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=newspaper_database
+      - DB_PORT=5432
+    depends_on:
+      - newspaper_database
+    links:
+      - newspaper_database
+    ports:
+      - 8080:8080
+    restart: always
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # NGINX configuration
+  # ----------------------------------------
+  # ----------------------------------------
+
+  loadbalance:
+    build: ./nginx
+    ports:
+      - "80:80"
+    links:
+      - my_newspaper
+    restart: always
+
+
+volumes:
+  postgres-data:

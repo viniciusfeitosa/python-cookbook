@@ -20,10 +20,6 @@ up:
 		docker-compose -f docker-compose.yml up --build -d
 		sleep 5
 		docker-compose ps
-		docker-compose exec users_service go run db/dbmigrate.go
-		docker-compose exec famous_news_service python dbmigrate.py
-		docker-compose exec politics_news_service python dbmigrate.py
-		docker-compose exec sports_news_service python dbmigrate.py
 
 up-tests:
 		docker stop $(shell docker ps -aq)
@@ -31,10 +27,6 @@ up-tests:
 		docker-compose -f docker-compose.yml -f docker-compose.test.yml up --build -d
 		sleep 5
 		docker-compose ps
-		docker-compose exec users_service go run db/dbmigrate.go
-		docker-compose exec famous_news_service python dbmigrate.py
-		docker-compose exec politics_news_service python dbmigrate.py
-		docker-compose exec sports_news_service python dbmigrate.py
 
 run-tests:
 		go run ${PWD}/TestRobot/main.go
@@ -42,7 +34,5 @@ run-tests:
 		docker exec -it $(shell docker ps -q --filter "name=orcherstrator_news_service_1") python tests_integration.py
 
 migrate:
-		docker-compose exec users_service go run db/dbmigrate.go
-		docker-compose exec famous_news_service python dbmigrate.py
-		docker-compose exec politics_news_service python dbmigrate.py
-		docker-compose exec sports_news_service python dbmigrate.py
+		docker-compose exec my_newspaper python /app/newspaper/manage.py makemigrations
+		docker-compose exec my_newspaper python /app/newspaper/manage.py migrate
