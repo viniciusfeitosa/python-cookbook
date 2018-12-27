@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     # 'subscription.apps.SubscriptionConfig',
     # 'payment.apps.PaymentConfig',
     'news.apps.NewsConfig',
+    'newsletter.apps.NewsletterConfig',
 ]
 
 MIDDLEWARE = [
