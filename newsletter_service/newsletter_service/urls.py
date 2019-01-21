@@ -20,7 +20,7 @@ from rest_framework import routers
 from newsletter.views import NewsletterViewSet
 
 router = routers.DefaultRouter()
-routers.register(r'newsletter', NewsletterViewSet)
+router.register(r'newsletter', NewsletterViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

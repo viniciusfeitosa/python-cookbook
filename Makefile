@@ -16,7 +16,7 @@ destroy:
 		docker rmi -f $(shell docker images -q)
 
 up:
-		docker stop $(shell docker ps -aq)
+		# docker stop $(shell docker ps -aq)
 		docker-compose -f docker-compose.yml up --build -d
 		sleep 5
 		docker-compose ps
@@ -36,5 +36,5 @@ run-tests:
 migrate:
 		docker-compose exec my_newspaper python /app/newspaper/manage.py makemigrations
 		docker-compose exec my_newspaper python /app/newspaper/manage.py migrate
-		docker-compose exec newsletter_service python /app/newsletter_service/manage.py makemigrations
-		docker-compose exec newsletter_service python /app/newsletter_service/manage.py migrate
+		docker-compose exec newsletter_service python /app/manage.py makemigrations
+		docker-compose exec newsletter_service python /app/manage.py migrate

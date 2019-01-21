@@ -23,7 +23,7 @@ class NewsletterViewSet(viewsets.ModelViewSet):
 
     @decorators.action(
         detail=True,
-        method=['post'],
+        methods=['post'],
         permission_classes=[permissions.IsAdminUser]
     )
     def send_newsletter(self, request, pk=None):

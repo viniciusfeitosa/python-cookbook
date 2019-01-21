@@ -12,4 +12,4 @@ RUN pip install pipenv
 
 RUN pipenv install --system --skip-lock
 
-CMD ["python", "/app/newspaper/manage.py", "runserver", "0.0.0.0:8080"]
+CMD ["python", "/app/manage.py", "runserver", "0.0.0.0:8081"]
