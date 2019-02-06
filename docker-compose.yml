@@ -2,14 +2,6 @@ version: '3'
 
 services:
 
-  rabbitmq:
-    image: rabbitmq
-    build: ./queue
-    ports:
-        - "15672:15672"
-        - "5672:5672"
-    restart: always
-
   # ----------------------------------------
   # ----------------------------------------
   # Newspaper monolithic application
@@ -20,9 +12,6 @@ services:
     build: ./database
     ports:
       - 5432:5432  # expose ports - HOST:CONTAINER
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
     volumes:
       - 'postgres-data:/var/lib/postgresql/data/'
     healthcheck:
@@ -79,7 +68,7 @@ services:
   # ----------------------------------------
   # ----------------------------------------
 
-  loadbalance:
+  web_server:
     build: ./nginx
     ports:
       - "80:80"
