@@ -23,7 +23,7 @@ class NewsletterViewSet(viewsets.ModelViewSet):
 
     @decorators.action(
         detail=True,
-        methods=['post'],
+        methods=['get'],
         permission_classes=[permissions.IsAdminUser]
     )
     def send_newsletter(self, request, pk=None):
@@ -38,9 +38,12 @@ class NewsletterViewSet(viewsets.ModelViewSet):
                 newsletter.content,
                 os.environ.get('EMAIL_FROM'),
                 mail_users,
-                fail_silently=True
+                fail_silently=False
             )
         except Newsletter.DoesNotExist as ex:
             return response.Response(
                 ex, status=status.HTTP_404_NOT_FOUND
             )
+        return response.Response(
+            'Success', status.HTTP_200_OK
+        )

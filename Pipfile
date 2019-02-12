@@ -1,0 +1,22 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+flake8 = "*"
+pep8 = "*"
+jedi = "*"
+rope = "*"
+autopep8 = "*"
+yapf = "*"
+
+[packages]
+django = "*"
+djangorestframework = "*"
+django-filter = "*"
+markdown = "*"
+"psycopg2" = "*"
+
+[requires]
+python_version = "3.7"
