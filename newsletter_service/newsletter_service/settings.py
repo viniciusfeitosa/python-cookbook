@@ -20,7 +20,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'fo3%i!sxwh30%nltowcor(ntg1c(0j35sj*j4d5_@ns*zoav3c'
+# SECRET_KEY = 'fo3%i!sxwh30%nltowcor(ntg1c(0j35sj*j4d5_@ns*zoav3c'
+SECRET_KEY = 'g(7ia!6=5w)#u8u@7epo!mfzweasp&2i)r-#bigf_*9x57bv&u'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -52,6 +53,23 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://{}:{}/{}'.format(
+            os.environ.get('REDIS_HOST'),
+            os.environ.get('REDIS_PORT'),
+            os.environ.get('REDIS_DB'),
+        ),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+
 ROOT_URLCONF = 'newsletter_service.urls'
 
 REST_FRAMEWORK = {
@@ -68,7 +86,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = os.environ.get('EMAIL_FROM')
+EMAIL_HOST_USER = os.environ.get('EMAIL_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 
 TEMPLATES = [

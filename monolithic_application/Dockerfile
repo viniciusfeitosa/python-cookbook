@@ -10,6 +10,6 @@ RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
 
 RUN pip install pipenv
 
-RUN pipenv install --system --deploy
+RUN pipenv install --skip-lock --system --deploy
 
 CMD ["python", "/app/newspaper/manage.py", "runserver", "0.0.0.0:8080"]

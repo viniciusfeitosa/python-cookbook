@@ -36,5 +36,5 @@ run-tests:
 migrate:
 		docker-compose exec my_newspaper python /app/newspaper/manage.py makemigrations
 		docker-compose exec my_newspaper python /app/newspaper/manage.py migrate
-		docker-compose exec newsletter_service python /app/manage.py makemigrations
-		docker-compose exec newsletter_service python /app/manage.py migrate
+		# docker-compose exec newsletter_service python /app/manage.py makemigrations
+		# docker-compose exec newsletter_service python /app/manage.py migrate

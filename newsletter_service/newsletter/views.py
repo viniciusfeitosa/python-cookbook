@@ -36,7 +36,7 @@ class NewsletterViewSet(viewsets.ModelViewSet):
             send_mail(
                 newsletter.subject,
                 newsletter.content,
-                os.environ.get('EMAIL_FROM'),
+                os.environ.get('EMAIL_USER'),
                 mail_users,
                 fail_silently=False
             )

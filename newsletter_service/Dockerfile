@@ -10,6 +10,6 @@ RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
 
 RUN pip install pipenv
 
-RUN pipenv install --system --skip-lock
+RUN pipenv install --skip-lock --system --deploy
 
 CMD ["python", "/app/manage.py", "runserver", "0.0.0.0:8081"]

@@ -2,6 +2,14 @@ version: '3'
 
 services:
 
+  redis:
+    image: redis
+    ports:
+     - "6379:6379"
+    healthcheck:
+      test: exit 0
+    restart: always
+
   # ----------------------------------------
   # ----------------------------------------
   # Newspaper monolithic application
@@ -30,12 +38,17 @@ services:
       - DB_HOST=newspaper_database
       - DB_PORT=5432
       - EMAIL_HOST=smtp.mail.com
-      - EMAIL_FROM=test_mail@mail.com
+      - EMAIL_USER=test_mail@mail.com
       - EMAIL_PASSWORD=your_password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=1
     depends_on:
       - newspaper_database
+      - redis
     links:
       - newspaper_database
+      - redis
     ports:
       - 8080:8080
     restart: always
@@ -58,12 +71,17 @@ services:
       - DB_HOST=newspaper_database
       - DB_PORT=5432
       - EMAIL_HOST=smtp.mail.com
-      - EMAIL_FROM=test_mail@mail.com
+      - EMAIL_USER=test_mail@mail.com
       - EMAIL_PASSWORD=your_password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=1
     depends_on:
       - newspaper_database
+      - redis
     links:
       - newspaper_database
+      - redis
     ports:
       - 8081:8081
     restart: always
