@@ -18,7 +18,7 @@ from rest_framework import routers
 from newsletter.views import NewsletterViewSet
 
 router = routers.DefaultRouter()
-router.register(r'^newsletter', NewsletterViewSet)
+router.register(r'^newsletter', NewsletterViewSet, basename='newsletter')
 
 urlpatterns = [
     url(r'^', include(router.urls)),
