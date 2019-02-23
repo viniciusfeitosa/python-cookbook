@@ -31,6 +31,8 @@ services:
     build: ./monolithic_application
     volumes:
       - './monolithic_application:/app'
+      - static_volume:/app/newspaper/static
+      - media_volume:/app/newspaper/static
     environment:
       - DB_NAME=newspaper_db
       - DB_USER=postgres
@@ -101,8 +103,13 @@ services:
     links:
       - my_newspaper
       - newsletter_service
+    volumes:
+      - static_volume:/app/newspaper/static
+      - media_volume:/app/newspaper/media
     restart: always
 
 
 volumes:
   postgres-data:
+  static_volume:
+  media_volume:

@@ -1,4 +1,4 @@
-FROM python:alpine3.7
+FROM python:3.7
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -6,10 +6,11 @@ ENV PYTHONUNBUFFERED 1
 COPY . /app
 WORKDIR /app
 
-RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
+# RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
 
 RUN pip install pipenv
 
 RUN pipenv install --skip-lock --system --deploy
 
-CMD ["python", "/app/newspaper/manage.py", "runserver", "0.0.0.0:8080"]
+# CMD ["python", "/app/newspaper/manage.py", "runserver", "0.0.0.0:8080"]
+CMD ["uwsgi", "--ini", "uwsgi.ini"]

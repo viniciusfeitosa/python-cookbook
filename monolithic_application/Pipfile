@@ -19,6 +19,7 @@ djangorestframework = "*"
 django-filter = "*"
 markdown = "*"
 "psycopg2" = "*"
+uwsgi = "*"
 
 [requires]
 python_version = "3.7"
