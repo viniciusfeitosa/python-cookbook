@@ -32,7 +32,6 @@ services:
     volumes:
       - './monolithic_application:/app'
       - static_volume:/app/newspaper/static
-      - media_volume:/app/newspaper/static
     environment:
       - DB_NAME=newspaper_db
       - DB_USER=postgres
@@ -103,9 +102,11 @@ services:
     links:
       - my_newspaper
       - newsletter_service
+    depends_on:
+      - my_newspaper
+      - newsletter_service
     volumes:
       - static_volume:/app/newspaper/static
-      - media_volume:/app/newspaper/media
     restart: always
 
 

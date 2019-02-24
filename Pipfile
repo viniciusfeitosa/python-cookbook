@@ -17,7 +17,7 @@ django-redis = "*"
 djangorestframework = "*"
 django-filter = "*"
 markdown = "*"
-"psycopg2" = "*"
+psycopg2-binary = "*"
 uwsgi = "*"
 
 [requires]
