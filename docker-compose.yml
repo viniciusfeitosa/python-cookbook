@@ -2,6 +2,12 @@ version: '3'
 
 services:
 
+  # ----------------------------------------
+  # ----------------------------------------
+  # Redis Cache
+  # ----------------------------------------
+  # ----------------------------------------
+
   redis:
     image: redis
     ports:
@@ -99,6 +105,27 @@ services:
       - 8081:8081
     restart: always
 
+  newsletter_command:
+    image: newsletter_command
+    build:
+        context: ./newsletter_service
+        dockerfile: Dockerfile.command
+    environment:
+      - DB_NAME=newsletter_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=newsletter_database
+      - DB_PORT=5432
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SECRET_KEY='g(7ia!6=5w)#u8u@7epo!mfzweasp&2i)r-#bigf_*9x57bv&u'
+    depends_on:
+      - newsletter_database
+      - kafka
+    links:
+      - newsletter_database
+      - kafka
+    restart: always
+
   # ----------------------------------------
   # ----------------------------------------
   # NGINX configuration
@@ -119,6 +146,40 @@ services:
       - static_volume:/app/newspaper/static
     restart: always
 
+  # ----------------------------------------
+  # ----------------------------------------
+  # Debezium
+  # ----------------------------------------
+  # ----------------------------------------
+
+  zookeeper:
+    image: debezium/zookeeper:0.8
+    ports:
+      - 2181:2181
+      - 2888:2888
+      - 3888:3888
+  kafka:
+    image: debezium/kafka:0.8
+    ports:
+      - 9092:9092
+    links:
+      - zookeeper
+    environment:
+      - ZOOKEEPER_CONNECT=zookeeper:2181
+  connect:
+    image: debezium/connect:0.8
+    ports:
+      - 8083:8083
+    links:
+      - kafka
+      - newspaper_database
+      - newsletter_database
+    environment:
+      - BOOTSTRAP_SERVERS=kafka:9092
+      - GROUP_ID=1
+      - CONFIG_STORAGE_TOPIC=my_connect_configs
+      - OFFSET_STORAGE_TOPIC=my_connect_offsets
+      - STATUS_STORAGE_TOPIC=my_connect_statuses
 
 volumes:
   postgres-data:

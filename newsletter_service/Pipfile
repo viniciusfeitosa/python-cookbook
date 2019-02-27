@@ -20,6 +20,7 @@ django-filter = "*"
 markdown = "*"
 psycopg2-binary = "*"
 uwsgi = "*"
+kafka-python = "*"
 
 [requires]
 python_version = "3.7"
