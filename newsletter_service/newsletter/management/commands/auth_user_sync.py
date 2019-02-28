@@ -25,6 +25,7 @@ class Command(BaseCommand):
         )
         for msg in consumer:
             try:
-                User.objects.create_user(**msg.value['payload']['after'])
+                user = User(**msg.value['payload']['after'])
+                user.save()
             except Exception:
                 pass
