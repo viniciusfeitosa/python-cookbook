@@ -49,6 +49,3 @@ class NewsModel(db.Model):
     @staticmethod
     def get_news(id):
         return NewsModel.query.get(id)
-
-    def __repr__(self):
-        return '<id {}>'.format(self.id)

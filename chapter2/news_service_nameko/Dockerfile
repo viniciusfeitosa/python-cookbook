@@ -14,4 +14,4 @@ ENTRYPOINT ["nameko"]
 
 CMD ["run", "--config",  "config.yaml", "src.app"]
 
-EXPOSE 8000
+EXPOSE 5001

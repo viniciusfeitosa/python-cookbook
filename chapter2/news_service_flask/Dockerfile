@@ -10,4 +10,4 @@ RUN pip install pipenv
 
 RUN pipenv install --skip-lock --system --deploy
 
-CMD ["gunicorn", "-w", "4", "-b", "127.0.0.1:4000", "app:api"]
+CMD ["gunicorn", "-w", "4", "-b", "127.0.0.1:5000", "app:api"]

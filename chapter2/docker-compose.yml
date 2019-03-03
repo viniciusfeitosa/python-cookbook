@@ -4,184 +4,81 @@ services:
 
   # ----------------------------------------
   # ----------------------------------------
-  # Redis Cache
+  # RabbitMQ
   # ----------------------------------------
   # ----------------------------------------
 
-  redis:
-    image: redis
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+      RABBITMQ_DEFAULT_VHOST: "/"
     ports:
-     - "6379:6379"
-    healthcheck:
-      test: exit 0
+      - "15672:15672"
+      - "5672:5672"
     restart: always
 
   # ----------------------------------------
   # ----------------------------------------
-  # Newspaper monolithic application
+  # News Database
   # ----------------------------------------
   # ----------------------------------------
 
-  newspaper_database:
-    build: ./database
+  news_database:
+    build: ./news_service_db
     ports:
       - 5432:5432  # expose ports - HOST:CONTAINER
     volumes:
-      - 'postgres-data:/var/lib/postgresql/data/'
+      - 'news-postgres-data:/var/lib/postgresql/data/'
     healthcheck:
       test: exit 0
     restart: always
 
-  my_newspaper:
-    image: my_newspaper
-    build: ./monolithic_application
-    volumes:
-      - './monolithic_application:/app'
-      - static_volume:/app/newspaper/static
+  # ----------------------------------------
+  # ----------------------------------------
+  # News Microservice Flask
+  # ----------------------------------------
+  # ----------------------------------------
+
+  news_flask:
+    image: news_flask
+    build: ./news_service_flask
     environment:
-      - DB_NAME=newspaper_db
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_HOST=newspaper_database
-      - DB_PORT=5432
-      - EMAIL_HOST=smtp.mail.com
-      - EMAIL_USER=test_mail@mail.com
-      - EMAIL_PASSWORD=your_password
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_DB=1
-      - SECRET_KEY='g(7ia!6=5w)#u8u@7epo!mfzweasp&2i)r-#bigf_*9x57bv&u'
+      - APP_ENV=development
+      - APP_PORT=5000
+      - DATABASE_URL=postgresql://postgres:postgres@news_db:5432/news_dev?sslmode=disable
     depends_on:
-      - newspaper_database
-      - redis
+      - news_database
     links:
-      - newspaper_database
-      - redis
+      - news_database
     ports:
-      - 8080:8080
+      - 5000:5000
     restart: always
 
   # ----------------------------------------
   # ----------------------------------------
-  # Newsletter service application
+  # News Microservice Nameko
   # ----------------------------------------
   # ----------------------------------------
 
-  newsletter_database:
-    build: ./newsletter_database
-    ports:
-      - 5433:5432  # expose ports - HOST:CONTAINER
-    volumes:
-      - 'postgres-newsletter-data:/var/lib/postgresql/data/'
-    healthcheck:
-      test: exit 0
-    restart: always
-
-  newsletter_service:
-    image: newsletter_service
-    build: ./newsletter_service
-    volumes:
-      - './newsletter_service:/app'
+  news_nameko:
+    image: news_nameko
+    build: ./news_service_nameko
     environment:
-      - DB_NAME=newsletter_db
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_HOST=newsletter_database
-      - DB_PORT=5432
-      - EMAIL_HOST=smtp.mail.com
-      - EMAIL_USER=test_mail@mail.com
-      - EMAIL_PASSWORD=your_password
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_DB=1
-      - SECRET_KEY='g(7ia!6=5w)#u8u@7epo!mfzweasp&2i)r-#bigf_*9x57bv&u'
+      - QUEUE_HOST=amqp://guest:guest@rabbitmq
+      - WEB_SERVER_ADDRESS=0.0.0.0:5001
+      - DATABASE_URL=postgresql://postgres:postgres@news_db:5432/news_dev?sslmode=disable
     depends_on:
-      - newsletter_database
-      - redis
+      - news_database
+      - rabbitmq
     links:
-      - newsletter_database
-      - redis
+      - news_database
+      - rabbitmq
     ports:
-      - 8081:8081
+      - 5001:5001
     restart: always
-
-  newsletter_command:
-    image: newsletter_command
-    build:
-        context: ./newsletter_service
-        dockerfile: Dockerfile.command
-    environment:
-      - DB_NAME=newsletter_db
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_HOST=newsletter_database
-      - DB_PORT=5432
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - SECRET_KEY='g(7ia!6=5w)#u8u@7epo!mfzweasp&2i)r-#bigf_*9x57bv&u'
-    depends_on:
-      - newsletter_database
-      - kafka
-    links:
-      - newsletter_database
-      - kafka
-    restart: always
-
-  # ----------------------------------------
-  # ----------------------------------------
-  # NGINX configuration
-  # ----------------------------------------
-  # ----------------------------------------
-
-  web_server:
-    build: ./nginx
-    ports:
-      - "80:80"
-    links:
-      - my_newspaper
-      - newsletter_service
-    depends_on:
-      - my_newspaper
-      - newsletter_service
-    volumes:
-      - static_volume:/app/newspaper/static
-    restart: always
-
-  # ----------------------------------------
-  # ----------------------------------------
-  # Debezium
-  # ----------------------------------------
-  # ----------------------------------------
-
-  zookeeper:
-    image: debezium/zookeeper:0.8
-    ports:
-      - 2181:2181
-      - 2888:2888
-      - 3888:3888
-  kafka:
-    image: debezium/kafka:0.8
-    ports:
-      - 9092:9092
-    links:
-      - zookeeper
-    environment:
-      - ZOOKEEPER_CONNECT=zookeeper:2181
-  connect:
-    image: debezium/connect:0.8
-    ports:
-      - 8083:8083
-    links:
-      - kafka
-      - newspaper_database
-      - newsletter_database
-    environment:
-      - BOOTSTRAP_SERVERS=kafka:9092
-      - GROUP_ID=1
-      - CONFIG_STORAGE_TOPIC=my_connect_configs
-      - OFFSET_STORAGE_TOPIC=my_connect_offsets
-      - STATUS_STORAGE_TOPIC=my_connect_statuses
 
 volumes:
-  postgres-data:
-  postgres-newsletter-data:
-  static_volume:
+  news-postgres-data:
