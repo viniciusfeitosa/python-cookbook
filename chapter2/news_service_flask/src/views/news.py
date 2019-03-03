@@ -28,7 +28,7 @@ def list_news():
 
 
 @news_api.route('/<int:news_id>', methods=['GET'])
-def get_a_user(news_id):
+def get_news(news_id):
     news = NewsModel.get_news(news_id)
     if not news:
         return view_response({'error': 'news not found'}, 404)
@@ -37,21 +37,21 @@ def get_a_user(news_id):
     return view_response(response_data, 200)
 
 
-@news_api.route('/<int:news_id>', methods=['PUT'])
-def update(news_id):
+@news_api.route('/', methods=['PUT'])
+def update_news():
     request_data = request.get_json()
     data, error = news_schema.load(request_data, partial=True)
     if error:
         return view_response(error, 400)
 
-    news = NewsModel.get_news(news_id)
+    news = NewsModel.get_news(data.get('id'))
     news.update(data)
     response_data = news_schema.dump(news).data
     return view_response(response_data, 200)
 
 
 @news_api.route('/int:news_id', methods=['DELETE'])
-def delete(news_id):
+def delete_news(news_id):
     news = NewsModel.get_news(news_id)
     news.delete()
     return view_response({'message': 'deleted'}, 204)
