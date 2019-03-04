@@ -1,5 +1,6 @@
-import datetime
 import enum
+from datetime import datetime
+
 from . import db
 
 from sqlalchemy.dialects import postgresql

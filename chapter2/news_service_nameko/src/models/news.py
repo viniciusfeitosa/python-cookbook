@@ -1,5 +1,6 @@
-import datetime
 import enum
+
+from datetime import datetime
 
 from sqlalchemy import (
     BigInteger,

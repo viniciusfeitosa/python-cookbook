@@ -4,7 +4,7 @@ max_workers: 10
 parent_calls_tracked: 10
 
 DB_URIS:
-    "news_service_db:Base": ${DATABASE_URL}
+    "news_service:Base": ${DATABASE_URL}
 
 LOGGING:
     version: 1

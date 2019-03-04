@@ -1,1 +1,1 @@
-CREATE DATABASE news_service_db;
+CREATE DATABASE news_db;
