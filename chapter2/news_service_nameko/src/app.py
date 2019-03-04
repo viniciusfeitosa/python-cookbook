@@ -15,26 +15,28 @@ class NewsService:
 
     db = DatabaseSession(Base)
 
-    @http('POST', '/')
+    @http('POST', '/news')
     def create_news(self, request):
-        data, error = NewsSchema().load(request)
-        if error:
+        schema = NewsSchema(strict=True)
+        try:
+            data = schema.loads(request.get_data(as_text=True)).data
+        except ValueError as error:
             return Exception(error)
 
         news = NewsModel(data)
 
         self.db.add(news)
         self.db.commit()
-        respose_data = NewsSchema().dump(news).data
+        respose_data = schema.dump(news).data
         return 201, json.dumps(respose_data)
 
-    @http('GET', '/')
+    @http('GET', '/news')
     def list_news(self, request):
         news = self.db.query(NewsModel).all()
         respose_data = NewsSchema().dump(news, many=True).data
         return 200, json.dumps(respose_data)
 
-    @http('GET', '/<int:news_id>')
+    @http('GET', '/news/<int:news_id>')
     def get_news(self, request, news_id):
         news = self.db.query(NewsModel).get(news_id)
         if not news:
@@ -43,25 +45,30 @@ class NewsService:
         respose_data = NewsSchema().dump(news).data
         return 200, json.dumps(respose_data)
 
-    @http('PUT', '/')
-    def udpate_news(self, request):
-        data, error = NewsSchema().load(request, partial=True)
-        if error:
+    @http('PUT', '/news/<int:news_id>')
+    def udpate_news(self, request, news_id):
+        schema = NewsSchema(strict=True)
+        try:
+            data = schema.loads(
+                request.get_data(as_text=True),
+                partial=True,
+            ).data
+        except ValueError as error:
             return Exception(error)
 
-        news = self.db.query(NewsModel).get(request['id'])
-        news.author = request.get('author')
-        news.title = request.get('title')
-        news.content = request.get('content')
-        news.is_active = request.get('is_active')
-        news.tags = request.get('tags')
+        news = self.db.query(NewsModel).get(news_id)
+        news.author = data.get('author')
+        news.title = data.get('title')
+        news.content = data.get('content')
+        news.is_active = data.get('is_active')
+        news.tags = data.get('tags')
         self.db.commit()
         respose_data = NewsSchema().dump(news).data
         return 200, json.dumps(respose_data)
 
-    @http('DELETE', '/<int:news_id>')
-    def delete_news(self, news_id):
+    @http('DELETE', '/news/<int:news_id>')
+    def delete_news(self, request, news_id):
         news = self.db.query(NewsModel).get(news_id)
         self.db.delete(news)
-        respose_data = {'message': 'News {} deleted'.format(news_id)}
-        return 204, json.dumps(respose_data)
+        self.db.commit()
+        return 204, 'News ID {} Deleted'.format(news_id)

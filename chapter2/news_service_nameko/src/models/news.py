@@ -24,7 +24,7 @@ class NewsModel(Base):
     __tablename__ = 'news'
 
     id = Column(BigInteger, primary_key=True)
-    author = Column(BigInteger)
+    author = Column(String(150))
     title = Column(String(150), nullable=False)
     content = Column(String(), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)

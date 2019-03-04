@@ -15,7 +15,7 @@ class NewsModel(db.Model):
     __tablename__ = 'news'
 
     id = db.Column(db.Integer, primary_key=True)
-    author = db.Column(db.Integer)
+    author = db.Column(db.String(150))
     title = db.Column(db.String(150), nullable=False)
     content = db.Column(db.String(), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
