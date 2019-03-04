@@ -1,0 +1,35 @@
+POST http://localhost:5000/news/ HTTP/1.1
+content-type: application/json
+
+{
+    "author": "Vinicius Pacheco",
+    "title": "Python Microservices Cookbook",
+    "content": "This book will be released in June",
+    "is_active": true,
+    "tags": ["books", "microservices", "Python"]
+}
+
+###
+
+PUT http://localhost:5000/news/5 HTTP/1.1
+content-type: application/json
+
+{
+    "author": "Vinicius Pacheco",
+    "title": "Python Microservices Cookbook",
+    "content": "This book will be released in June",
+    "is_active": true,
+    "tags": ["books", "microservices", "Python", "Nameko"]
+}
+
+###
+
+GET http://localhost:5000/news/5 HTTP/1.1
+
+###
+
+GET http://localhost:5000/news/ HTTP/1.1
+
+###
+
+DELETE http://localhost:5000/news/5 HTTP/1.1

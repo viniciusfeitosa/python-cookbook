@@ -50,7 +50,7 @@ def update_news(news_id):
     return view_response(response_data, 200)
 
 
-@news_api.route('/int:news_id', methods=['DELETE'])
+@news_api.route('/<int:news_id>', methods=['DELETE'])
 def delete_news(news_id):
     news = NewsModel.get_news(news_id)
     news.delete()
