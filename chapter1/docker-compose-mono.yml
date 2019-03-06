@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+
+  database:
+    build: ./database
+    ports:
+      - 5432:5432
+    volumes:
+      - 'postgres-data:/var/lib/postgresql/data/'
+    healthcheck:
+      test: exit 0
+    restart: always
+
+  django_application:
+    build: ./django_application
+    volumes:
+      - './django_application:/app'
+      - static_volume:/app/static
+    environment:
+      - DB_NAME=app_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=database
+      - DB_PORT=5432
+    depends_on:
+      - database
+    links:
+      - database
+    ports:
+      - 8080:8080
+    restart: always
+
+  web_server:
+    build: ./web_server
+    ports:
+      - "80:80"
+    links:
+      - django_application
+    depends_on:
+      - django_application
+    volumes:
+      - static_volume:/app/static
+    restart: always
+
+volumes:
+  postgres-data:
+  static_volume:
