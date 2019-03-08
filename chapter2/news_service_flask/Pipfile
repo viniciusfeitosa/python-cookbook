@@ -14,7 +14,7 @@ yapf = "*"
 [packages]
 flask = "*"
 flask-sqlalchemy = "*"
-psycopg2 = "*"
+psycopg2-binary = "*"
 flask-migrate = "*"
 flask-script = "*"
 marshmallow = "*"
