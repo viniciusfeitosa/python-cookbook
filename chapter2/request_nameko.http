@@ -1,4 +1,4 @@
-POST http://localhost:5001/news HTTP/1.1
+POST http://localhost:5001/news
 content-type: application/json
 
 {
@@ -11,7 +11,7 @@ content-type: application/json
 
 ###
 
-PUT http://localhost:5001/news/1 HTTP/1.1
+PUT http://localhost:5001/news/1
 content-type: application/json
 
 {
@@ -24,12 +24,12 @@ content-type: application/json
 
 ###
 
-GET http://localhost:5001/news/1 HTTP/1.1
+GET http://localhost:5001/news/1
 
 ###
 
-GET http://localhost:5001/news HTTP/1.1
+GET http://localhost:5001/news
 
 ###
 
-DELETE http://localhost:5001/news/1 HTTP/1.1
+DELETE http://localhost:5001/news/1

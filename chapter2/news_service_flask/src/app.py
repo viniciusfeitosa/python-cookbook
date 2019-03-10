@@ -1,6 +1,7 @@
 # src/app.py
 
 from flask import Flask
+from flask_migrate import Migrate
 
 from .config import app_config
 from .models import db
@@ -14,6 +15,7 @@ def load_app(env_name):
     app.config.from_object(app_config[env_name])
 
     db.init_app(app)
+    Migrate(app, db)
 
     app.register_blueprint(news_blueprint, url_prefix='/news')
 

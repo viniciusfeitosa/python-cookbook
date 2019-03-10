@@ -19,6 +19,7 @@ flask-migrate = "*"
 flask-script = "*"
 marshmallow = "*"
 gunicorn = "*"
+Flask-Migrate = "*"
 
 [requires]
 python_version = "3.7"

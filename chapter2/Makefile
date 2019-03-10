@@ -21,5 +21,11 @@ up:
 		sleep 5
 		docker-compose ps
 
+initmigration:
+		docker-compose exec news_flask flask db init
+
+makemigrate:
+		docker-compose exec news_flask flask db migrate
+
 migrate:
-		docker-compose exec news_nameko python dbmigrate.py
+		docker-compose exec news_flask flask db upgrade

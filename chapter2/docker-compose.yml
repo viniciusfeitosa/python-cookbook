@@ -46,6 +46,7 @@ services:
     volumes:
       - './news_service_flask:/app'
     environment:
+      - FLASK_APP=run.py
       - APP_ENV=development
       - APP_PORT=5000
       - DATABASE_URL=postgresql://postgres:postgres@news_service_db:5432/news_db?sslmode=disable
