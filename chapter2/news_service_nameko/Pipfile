@@ -16,7 +16,6 @@ nameko = "*"
 nameko-sqlalchemy = "*"
 psycopg2-binary = "*"
 marshmallow = "*"
-news-service-nameko = {path = ".",editable = true}
 
 [requires]
 python_version = "3.7"
