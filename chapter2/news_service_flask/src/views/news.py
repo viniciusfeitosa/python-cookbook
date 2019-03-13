@@ -1,6 +1,6 @@
 from flask import request, json, Response, Blueprint
 from ..models.news import NewsModel
-from ..schema.news import NewsSchema
+from ..schemas.news import NewsSchema
 
 news_api = Blueprint('news_api', __name__)
 news_schema = NewsSchema()

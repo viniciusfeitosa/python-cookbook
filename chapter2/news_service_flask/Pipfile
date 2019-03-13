@@ -14,12 +14,10 @@ yapf = "*"
 [packages]
 flask = "*"
 flask-sqlalchemy = "*"
-psycopg2-binary = "*"
-flask-migrate = "*"
-flask-script = "*"
-marshmallow = "*"
-gunicorn = "*"
 Flask-Migrate = "*"
+marshmallow = "*"
+psycopg2-binary = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.7"

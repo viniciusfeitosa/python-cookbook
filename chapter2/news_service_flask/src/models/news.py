@@ -1,20 +1,15 @@
-import enum
 from datetime import datetime
 
-from . import db
+from . import db  # import ORM instance from __init__.py
 
 from sqlalchemy.dialects import postgresql
 
 
-class PlanEnum(enum.Enum):
-    F = 'free'
-    S = 'subscribers'
-
-
+# Defining model class with database operations
 class NewsModel(db.Model):
-    __tablename__ = 'news'
+    __tablename__ = 'news'  # set table name
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)  # primary key
     author = db.Column(db.String(150))
     title = db.Column(db.String(150), nullable=False)
     content = db.Column(db.String(), nullable=False)
