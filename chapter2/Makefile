@@ -21,11 +21,17 @@ up:
 		sleep 5
 		docker-compose ps
 
-initmigration:
+flask-initmigration:
 		docker-compose exec news_flask flask db init
 
-makemigrate:
+flask-makemigrate:
 		docker-compose exec news_flask flask db migrate
 
-migrate:
+flask-migrate:
 		docker-compose exec news_flask flask db upgrade
+
+nameko-initmigration:
+		docker-compose exec news_nameko alembic revision --autogenerate -m "baseline"
+
+nameko-migrate:
+		docker-compose exec news_nameko alembic upgrade head

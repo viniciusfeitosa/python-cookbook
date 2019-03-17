@@ -16,6 +16,7 @@ nameko = "*"
 nameko-sqlalchemy = "*"
 psycopg2-binary = "*"
 marshmallow = "*"
+alembic = "*"
 
 [requires]
 python_version = "3.7"

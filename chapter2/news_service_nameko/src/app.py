@@ -7,7 +7,7 @@ from .models.news import (
     Base,
     NewsModel,
 )
-from .schema.news import NewsSchema
+from .schemas.news import NewsSchema
 
 
 class NewsService:

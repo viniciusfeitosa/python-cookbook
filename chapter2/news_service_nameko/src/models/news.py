@@ -1,5 +1,3 @@
-import enum
-
 from datetime import datetime
 
 from sqlalchemy import (
@@ -13,11 +11,6 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
-
-
-class PlanEnum(enum.Enum):
-    F = 'free'
-    S = 'subscribers'
 
 
 class NewsModel(Base):
