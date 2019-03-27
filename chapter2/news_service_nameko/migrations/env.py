@@ -2,8 +2,6 @@ from __future__ import with_statement
 
 from logging.config import fileConfig
 
-from sqlalchemy import create_engine
-
 from alembic import context
 
 
@@ -60,6 +58,7 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
+    from sqlalchemy import create_engine  # noqa
     connectable = create_engine(os.environ.get('DATABASE_URL'))
 
     with connectable.connect() as connection:
