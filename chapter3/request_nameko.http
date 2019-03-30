@@ -1,0 +1,18 @@
+POST http://localhost:5001/news
+content-type: application/json
+
+{
+    "author": "Vinicius Pacheco",
+    "title": "Python Microservices Cookbook",
+    "content": "This book will be released in June",
+    "is_active": true,
+    "tags": ["books", "microservices", "Python"]
+}
+
+###
+
+GET http://localhost:5001/news/1
+
+###
+
+GET http://localhost:5001/news/list/page/1/limit/10
