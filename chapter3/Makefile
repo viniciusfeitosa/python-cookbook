@@ -21,8 +21,8 @@ up:
 		sleep 5
 		docker-compose ps
 
-nameko-initmigration:
+initmigration:
 		docker-compose exec news_nameko alembic revision --autogenerate -m "baseline"
 
-nameko-migrate:
+migrate:
 		docker-compose exec news_nameko alembic upgrade head
