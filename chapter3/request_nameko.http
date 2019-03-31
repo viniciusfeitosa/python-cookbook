@@ -1,4 +1,4 @@
-POST http://localhost:5001/news
+POST http://localhost:5001/create_news
 content-type: application/json
 
 {
@@ -16,3 +16,7 @@ GET http://localhost:5001/news/1
 ###
 
 GET http://localhost:5001/news/list/page/1/limit/10
+
+###
+
+GET http://localhost:5001/news/1a34f088-535e-11e9-a725-0242ac120005

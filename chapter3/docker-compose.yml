@@ -58,7 +58,7 @@ services:
       - QUEUE_HOST=amqp://guest:guest@rabbitmq
       - WEB_SERVER_ADDRESS=0.0.0.0:5001
       - QUERY_DATABASE_URL=mongodb://news_service_query_db:27017/
-      - COMMAND_DATABASE_URL=postgresql://postgres:postgres@news_service_db:5432/news_db?sslmode=disable
+      - COMMAND_DATABASE_URL=postgresql://postgres:postgres@news_service_command_db:5432/news_db?sslmode=disable
     depends_on:
       - news_service_command_db
       - news_service_query_db

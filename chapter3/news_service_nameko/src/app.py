@@ -40,26 +40,25 @@ class NewsServiceAPI:
 
         try:
             with ClusterRpcProxy(CONFIG) as cluster_rpc:
-                data.id = str(uuid.uuid1())
+                data['id'] = str(uuid.uuid1())
                 cluster_rpc.command_stack.news_domain(data)
             localtion = {
                 'Location': 'http://localhost:5001/news/{}'.format(data['id'])
             }
             return 202, localtion, 'ACCEPTED'
-        except Exception:
+        except Exception as e:
+            logging.error(e)
             return 500, 'Internal Server Error'
 
     @http('GET', '/news/list/page/<int:page>/limit/<int:limit>')
     def list_news(self, request, page, limit):
-        news_list = self.news_rpc.list_news(page, limit)
-        respose_data = NewsSchema().dump(news_list, many=True).data
-        return 200, json.dumps(respose_data)
+        respose_data = self.news_rpc.list_news(page, limit)
+        return 200, {'Content-Type': 'application/json'}, respose_data
 
     @http('GET', '/news/<string:news_id>')
     def get_news(self, request, news_id):
-        news = self.news_rpc.get_news(news_id)
-        respose_data = NewsSchema().dump(news).data
-        return 200, json.dumps(respose_data)
+        respose_data = self.news_rpc.get_news(news_id)
+        return 200, {'Content-Type': 'application/json'}, respose_data
 
 
 class CommandNewsService:
@@ -68,7 +67,7 @@ class CommandNewsService:
     db = DatabaseSession(Base)
 
     @rpc
-    def create_news(self, data):
+    def news_domain(self, data):
         try:
             news = NewsCommandModel(data)
             self.db.add(news)
@@ -85,8 +84,7 @@ class EventsComponet:
     @event_handler('command_stack', 'news_created')
     def news_created_normalize_db(self, data):
         try:
-            news = NewsQueryModel(data)
-            news.save()
+            NewsQueryModel(**data).save()
         except Exception as e:
             logging.error(e)
 
@@ -103,14 +101,17 @@ class QueryNewsService:
             news_list = NewsQueryModel.objects.skip(offset).limit(limit)
             return news_list.to_json()
         except Exception as e:
-            return json.dumps({'error': e})
+            logging.error(e)
+            return json.dumps({'error': str(e)})
 
     @rpc
     def get_news(self, news_id):
         try:
-            news = NewsQueryModel.objects.get(id=id)
+            news = NewsQueryModel.objects.get(id=news_id)
             return news.to_json()
         except mongoengine.DoesNotExist as e:
-            return json.dumps({'error': e})
+            logging.error(e)
+            return json.dumps({'error': str(e)})
         except Exception as e:
-            return json.dumps({'error': e})
+            logging.error(e)
+            return json.dumps({'error': str(e)})

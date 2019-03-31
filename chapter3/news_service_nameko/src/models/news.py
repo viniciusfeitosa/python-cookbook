@@ -7,7 +7,6 @@ from mongoengine import (
     Document,
     DateTimeField,
     ListField,
-    IntField,
     StringField,
 )
 
@@ -48,19 +47,10 @@ connect('news', host=os.environ.get('QUERY_DATABASE_URL'))
 
 
 class NewsQueryModel(Document):
-    id = IntField(primary_key=True)
+    id = StringField(primary_key=True)
     author = StringField(required=True, max_length=50)
     title = StringField(required=True, max_length=200)
     content = StringField(required=True)
     created_at = DateTimeField(default=datetime.utcnow)
     is_active = BooleanField(default=False)
     tags = ListField(StringField(max_length=50))
-
-    # class constructor
-    def __init__(self, data):
-        self.id = data.get('id')
-        self.author = data.get('author')
-        self.title = data.get('title')
-        self.content = data.get('content')
-        self.is_active = data.get('is_active')
-        self.tags = data.get('tags')
