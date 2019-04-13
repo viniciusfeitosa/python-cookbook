@@ -22,19 +22,21 @@ services:
 
   # ----------------------------------------
   # ----------------------------------------
-  # News Database
+  # News Service CQRS
   # ----------------------------------------
   # ----------------------------------------
 
-  news_service_command_db:
-    build: ./news_service_db
+  # Command Stack
+  news_service_cqrs_command_db:
+    build: ./news_service_cqrs/command_db
     ports:
       - 5432:5432  # expose ports - HOST:CONTAINER
     healthcheck:
       test: exit 0
     restart: always
 
-  news_service_query_db:
+  # Query Stack
+  news_service_cqrs_query_db:
     image: mongo:latest
     ports:
       - "27017:27017"
@@ -43,25 +45,20 @@ services:
       test: exit 0
     restart: always
 
-  # ----------------------------------------
-  # ----------------------------------------
-  # News Microservice Nameko
-  # ----------------------------------------
-  # ----------------------------------------
-
-  news_nameko:
-    image: news_nameko
-    build: ./news_service_nameko
+  # News Microservice
+  news_nameko_cqrs:
+    image: news_nameko_cqrs
+    build: ./news_service_cqrs
     volumes:
-      - './news_service_nameko:/app'
+      - './news_service_cqrs:/app'
     environment:
       - QUEUE_HOST=amqp://guest:guest@rabbitmq
       - WEB_SERVER_ADDRESS=0.0.0.0:5001
       - QUERY_DATABASE_URL=mongodb://news_service_query_db:27017/
       - COMMAND_DATABASE_URL=postgresql://postgres:postgres@news_service_command_db:5432/news_db?sslmode=disable
     depends_on:
-      - news_service_command_db
-      - news_service_query_db
+      - news_service_cqrs_command_db
+      - news_service_cqrs_query_db
       - rabbitmq
     ports:
       - 5001:5001

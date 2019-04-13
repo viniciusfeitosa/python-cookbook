@@ -15,14 +15,36 @@ destroy:
 		docker rm $(shell docker ps -aq)
 		docker rmi -f $(shell docker images -q)
 
-up:
+# ----------------------------------------
+# ----------------------------------------
+# News Service CQRS
+# ----------------------------------------
+# ----------------------------------------
+up_cqrs:
 		# docker stop $(shell docker ps -aq)
-		docker-compose -f docker-compose.yml up --build -d
+		docker-compose -f docker-compose_cqrs.yml up --build -d
 		sleep 5
 		docker-compose ps
 
-initmigration:
-		docker-compose exec news_nameko alembic revision --autogenerate -m "baseline"
+initmigration_cqrs:
+		docker-compose exec news_nameko_cqrs alembic revision --autogenerate -m "baseline"
 
-migrate:
-		docker-compose exec news_nameko alembic upgrade head
+migrate_cqrs:
+		docker-compose exec news_nameko_cqrs alembic upgrade head
+
+# ----------------------------------------
+# ----------------------------------------
+# News Service Event Sourcing
+# ----------------------------------------
+# ----------------------------------------
+up_es:
+		# docker stop $(shell docker ps -aq)
+		docker-compose -f docker-compose_es.yml up --build -d
+		sleep 5
+		docker-compose ps
+
+initmigration_es:
+		docker-compose exec news_nameko_es alembic revision --autogenerate -m "baseline"
+
+migrate_es:
+		docker-compose exec news_nameko_es alembic upgrade head
