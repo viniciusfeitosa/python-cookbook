@@ -74,3 +74,26 @@ initmigration_ca:
 
 migrate_ca:
 		docker-compose -f docker-compose_ca.yml exec news_nameko_ca alembic upgrade head
+
+# ----------------------------------------
+# ----------------------------------------
+# News Service Cache Server Layer
+# ----------------------------------------
+# ----------------------------------------
+up_csl:
+		# docker stop $(shell docker ps -aq)
+		docker-compose -f docker-compose_csl.yml up --build -d
+		sleep 5
+		docker-compose -f docker-compose_csl.yml ps
+
+status_csl:
+		docker-compose -f docker-compose_csl.yml ps
+
+logs_service_csl:
+		docker-compose -f docker-compose_csl.yml logs news_nameko_csl
+
+initmigration_csl:
+		docker-compose -f docker-compose_csl.yml exec news_nameko_csl alembic revision --autogenerate -m "baseline"
+
+migrate_csl:
+		docker-compose -f docker-compose_csl.yml exec news_nameko_csl alembic upgrade head

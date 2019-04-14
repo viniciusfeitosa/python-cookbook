@@ -1,0 +1,53 @@
+POST http://localhost/news
+content-type: application/json
+
+{
+    "author": "Vinicius Pacheco",
+    "title": "Python Microservices Cookbook",
+    "content": "This book will be released in June",
+    "is_active": true,
+    "tags": ["books", "microservices", "Python"]
+}
+
+###
+
+PUT http://localhost/news/c2143918-5f0b-11e9-8738-0242ac120006
+content-type: application/json
+
+{
+    "author": "Vinicius Pacheco",
+    "title": "Python Microservices Cookbook",
+    "content": "This book will be released in June",
+    "is_active": true,
+    "tags": ["books", "microservices", "Python", "Event Sourcing"]
+}
+
+###
+
+PUT http://localhost/news/7fbef662-5e6f-11e9-a359-0242ac120005/publish
+content-type: application/json
+
+{}
+
+###
+
+PUT http://localhost/news/c2143918-5f0b-11e9-8738-0242ac120006/unpublish
+content-type: application/json
+
+{}
+
+###
+
+GET http://localhost/news/1
+
+###
+
+GET http://localhost/news/list/page/1/limit/10
+
+###
+
+GET http://localhost/news/8a840b82-5ee7-11e9-b9b0-0242ac120006
+
+###
+
+GET http://localhost/cache/c2143918-5f0b-11e9-8738-0242ac120006
