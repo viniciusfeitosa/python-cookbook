@@ -1,8 +1,5 @@
 .PHONY: help
 
-status:
-		docker-compose ps
-
 stop:
 		docker stop $(shell docker ps -aq)
 
@@ -24,13 +21,13 @@ up_cqrs:
 		# docker stop $(shell docker ps -aq)
 		docker-compose -f docker-compose_cqrs.yml up --build -d
 		sleep 5
-		docker-compose ps
+		docker-compose -f docker-compose_cqrs.yml ps
 
 initmigration_cqrs:
-		docker-compose exec news_nameko_cqrs alembic revision --autogenerate -m "baseline"
+		docker-compose -f docker-compose_cqrs.yml exec news_nameko_cqrs alembic revision --autogenerate -m "baseline"
 
 migrate_cqrs:
-		docker-compose exec news_nameko_cqrs alembic upgrade head
+		docker-compose -f docker-compose_cqrs.yml exec news_nameko_cqrs alembic upgrade head
 
 # ----------------------------------------
 # ----------------------------------------
@@ -41,10 +38,16 @@ up_es:
 		# docker stop $(shell docker ps -aq)
 		docker-compose -f docker-compose_es.yml up --build -d
 		sleep 5
-		docker-compose ps
+		docker-compose -f docker-compose_es.yml ps
+
+status_es:
+		docker-compose -f docker-compose_es.yml ps
+
+logs_service_es:
+		docker-compose -f docker-compose_es.yml logs news_nameko_es
 
 initmigration_es:
-		docker-compose exec news_nameko_es alembic revision --autogenerate -m "baseline"
+		docker-compose -f docker-compose_es.yml exec news_nameko_es alembic revision --autogenerate -m "baseline"
 
 migrate_es:
-		docker-compose exec news_nameko_es alembic upgrade head
+		docker-compose -f docker-compose_es.yml exec news_nameko_es alembic upgrade head

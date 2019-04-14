@@ -30,7 +30,7 @@ services:
   news_service_es_command_db:
     build: ./news_service_es/command_db
     ports:
-      - 5433:5432  # expose ports - HOST:CONTAINER
+      - 5432:5432  # expose ports - HOST:CONTAINER
     healthcheck:
       test: exit 0
     restart: always
@@ -39,7 +39,7 @@ services:
   news_service_es_query_db:
     image: mongo:latest
     ports:
-      - "27018:27017"
+      - "27017:27017"
     command: [ "mongod", "--smallfiles", "--logpath=/dev/null" ]
     healthcheck:
       test: exit 0
@@ -54,12 +54,12 @@ services:
     environment:
       - QUEUE_HOST=amqp://guest:guest@rabbitmq
       - WEB_SERVER_ADDRESS=0.0.0.0:5001
-      - QUERY_DATABASE_URL=mongodb://news_service_query_db:27018/
-      - COMMAND_DATABASE_URL=postgresql://postgres:postgres@news_service_command_db:5433/news_db?sslmode=disable
+      - QUERY_DATABASE_URL=mongodb://news_service_es_query_db:27017/
+      - COMMAND_DATABASE_URL=postgresql://postgres:postgres@news_service_es_command_db:5432/news_db?sslmode=disable
     depends_on:
       - news_service_es_command_db
       - news_service_es_query_db
       - rabbitmq
     ports:
-      - 5002:5001
+      - 5001:5001
     restart: always

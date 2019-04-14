@@ -14,6 +14,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Index,
     Integer,
     String,
 )
@@ -27,7 +28,8 @@ class NewsCommandModel(Base):
     __tablename__ = 'news'
 
     id = Column(String(250), primary_key=True)
-    version = Column(Integer)
+    version = Column(Integer, primary_key=True)
+    status = Column(String(250))
     author = Column(String(150))
     title = Column(String(150), nullable=False)
     content = Column(String(), nullable=False)
@@ -35,10 +37,14 @@ class NewsCommandModel(Base):
     is_active = Column(Boolean, default=False)
     tags = Column(postgresql.ARRAY(String))
 
+    __table_args__ = Index('index', 'id', 'version'),
+    __table_args__ = Index('index_by_id', 'id'),
+
     # class constructor
     def __init__(self, data):
         self.id = data.get('id')
         self.version = data.get('version')
+        self.status = data.get('status')
         self.author = data.get('author')
         self.title = data.get('title')
         self.content = data.get('content')

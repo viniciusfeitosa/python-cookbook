@@ -27,7 +27,7 @@ class NewsServiceAPI:
     query_stack = RpcProxy('query_stack')
     command_stack = RpcProxy('command_stack')
 
-    @http('POST', '/create_news')
+    @http('POST', '/news')
     def create_news(self, request):
         schema = NewsSchema(strict=True)
         try:
@@ -36,7 +36,50 @@ class NewsServiceAPI:
             return 400, 'Invalid payload'
 
         try:
-            news_id = self.command_stack.news_domain(data)
+            news_id = self.command_stack.create_news(data)
+            localtion = {
+                'Location': 'http://localhost:5001/news/{}'.format(news_id)
+            }
+            return 202, localtion, 'ACCEPTED'
+        except Exception as e:
+            logging.error(e)
+            return 500, 'Internal Server Error'
+
+    @http('PUT', '/news/<string:news_id>')
+    def update_news(self, request, news_id):
+        schema = NewsSchema(strict=True)
+        try:
+            data = schema.loads(request.get_data(as_text=True)).data
+        except ValueError:
+            return 400, 'Invalid payload'
+
+        try:
+            data['id'] = news_id
+            news_id = self.command_stack.edit_news(data)
+            localtion = {
+                'Location': 'http://localhost:5001/news/{}'.format(news_id)
+            }
+            return 202, localtion, 'ACCEPTED'
+        except Exception as e:
+            logging.error(e)
+            return 500, 'Internal Server Error'
+
+    @http('PUT', '/news/<string:news_id>/publish')
+    def publish_news(self, request, news_id):
+        try:
+            news_id = self.command_stack.publish_news(news_id)
+            localtion = {
+                'Location': 'http://localhost:5001/news/{}'.format(news_id)
+            }
+            return 202, localtion, 'ACCEPTED'
+        except Exception as e:
+            logging.error(e)
+            return 500, 'Internal Server Error'
+
+    @http('PUT', '/news/<string:news_id>/unpublish')
+    def unpublish_news(self, request, news_id):
+        try:
+            news_id = self.command_stack.unpublish_news(news_id)
             localtion = {
                 'Location': 'http://localhost:5001/news/{}'.format(news_id)
             }
@@ -62,13 +105,70 @@ class CommandNewsService:
     db = DatabaseSession(Base)
 
     @rpc
-    def news_domain(self, data):
+    def create_news(self, data):
         try:
             data['id'] = str(uuid.uuid1())
+            data['version'] = 1
+            data['status'] = 'CREATED'
             news = NewsCommandModel(data)
             self.db.add(news)
             self.db.commit()
             self.dispatcher('news_created', data)
+            return data.get('id')
+        except Exception as e:
+            self.db.rollback()
+            logging.error(e)
+
+    @rpc
+    def edit_news(self, data):
+        try:
+            news = self.db.query(NewsCommandModel).filter(
+                NewsCommandModel.id == data.get('id')
+            ).order_by(NewsCommandModel.version.desc())[0]
+            data['version'] = news.version + 1
+            data['status'] = 'UPDATED'
+            news = NewsCommandModel(data)
+            self.db.add(news)
+            self.db.commit()
+            self.dispatcher('news_edited', data)
+            return data.get('id')
+        except Exception as e:
+            self.db.rollback()
+            logging.error(e)
+
+    @rpc
+    def publish_news(self, news_id):
+        try:
+            news = self.db.query(NewsCommandModel).filter(
+                NewsCommandModel.id == news_id
+            ).order_by(NewsCommandModel.version.desc())[0]
+            data = NewsSchema().dump(news).data
+            data['version'] = news.version + 1
+            data['status'] = 'PUBLISHED'
+            data['is_active'] = True
+            news_data = NewsCommandModel(data)
+            self.db.add(news_data)
+            self.db.commit()
+            self.dispatcher('news_edited', data)
+            return data.get('id')
+        except Exception as e:
+            self.db.rollback()
+            logging.error(e)
+
+    @rpc
+    def unpublish_news(self, news_id):
+        try:
+            news = self.db.query(NewsCommandModel).filter(
+                NewsCommandModel.id == news_id
+            ).order_by(NewsCommandModel.version.desc())[0]
+            data = NewsSchema().dump(news).data
+            data['version'] = news.version + 1
+            data['status'] = 'UNPUBLISHED'
+            data['is_active'] = False
+            news_data = NewsCommandModel(data)
+            self.db.add(news_data)
+            self.db.commit()
+            self.dispatcher('news_edited', data)
             return data.get('id')
         except Exception as e:
             self.db.rollback()
@@ -81,7 +181,22 @@ class EventsComponet:
     @event_handler('command_stack', 'news_created')
     def news_created_normalize_db(self, data):
         try:
+            del data['version']
+            del data['status']
             NewsQueryModel(**data).save()
+        except Exception as e:
+            logging.error(e)
+
+    @event_handler('command_stack', 'news_edited')
+    def news_edited_normalize_db(self, data):
+        try:
+            del data['version']
+            del data['status']
+            news = NewsQueryModel.objects.get(
+                id=data.get('id')
+            )
+            news.update(**data)
+            news.reload()
         except Exception as e:
             logging.error(e)
 
