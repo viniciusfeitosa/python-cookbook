@@ -51,3 +51,26 @@ initmigration_es:
 
 migrate_es:
 		docker-compose -f docker-compose_es.yml exec news_nameko_es alembic upgrade head
+
+# ----------------------------------------
+# ----------------------------------------
+# News Service Cache Aside
+# ----------------------------------------
+# ----------------------------------------
+up_es:
+		# docker stop $(shell docker ps -aq)
+		docker-compose -f docker-compose_ca.yml up --build -d
+		sleep 5
+		docker-compose -f docker-compose_ca.yml ps
+
+status_es:
+		docker-compose -f docker-compose_ca.yml ps
+
+logs_service_es:
+		docker-compose -f docker-compose_ca.yml logs news_nameko_ca
+
+initmigration_es:
+		docker-compose -f docker-compose_ca.yml exec news_nameko_ca alembic revision --autogenerate -m "baseline"
+
+migrate_es:
+		docker-compose -f docker-compose_ca.yml exec news_nameko_ca alembic upgrade head
