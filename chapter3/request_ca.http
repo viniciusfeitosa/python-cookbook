@@ -11,7 +11,7 @@ content-type: application/json
 
 ###
 
-PUT http://localhost:5001/news/4cf48d62-5e76-11e9-8205-0242ac120005
+PUT http://localhost:5001/news/0cfbcc80-5e7f-11e9-bd74-0242ac120006
 content-type: application/json
 
 {
@@ -31,7 +31,7 @@ content-type: application/json
 
 ###
 
-PUT http://localhost:5001/news/7fbef662-5e6f-11e9-a359-0242ac120005/unpublish
+PUT http://localhost:5001/news/b023d118-5e85-11e9-9290-0242ac120006/unpublish
 content-type: application/json
 
 {}
@@ -46,4 +46,4 @@ GET http://localhost:5001/news/list/page/1/limit/10
 
 ###
 
-GET http://localhost:5001/news/7fbef662-5e6f-11e9-a359-0242ac120005
+GET http://localhost:5001/news/b023d118-5e85-11e9-9290-0242ac120006

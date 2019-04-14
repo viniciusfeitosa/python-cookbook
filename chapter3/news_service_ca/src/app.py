@@ -209,7 +209,8 @@ class EventsComponet:
     def set_cache(self, data):
         redis_data = json.dumps(data)
         self.redis.set(data.get('id'), redis_data)
-        self.redis.rpush(CACHE_ALL, redis_data)
+        if not self.redis.get(data.get('id')):
+            self.redis.rpush(CACHE_ALL, data.get('id'))
 
 
 class QueryNewsService:
@@ -224,11 +225,16 @@ class QueryNewsService:
             offset = (page - 1) * limit
 
             # gettting list from cache
-            news_list = self.redis.lrange(CACHE_ALL, page, limit)
+            news_list = self.redis.lrange(CACHE_ALL, (page - 1), limit)
             if news_list:
-                return news_list
+                logging.info('list from cache')
+                return json.dumps([
+                    self.redis.get(news_id)
+                    for news_id in news_list
+                ])
 
             news_list = NewsQueryModel.objects.skip(offset).limit(limit)
+            logging.info('list from DB')
             return news_list.to_json()
         except Exception as e:
             logging.error(e)
@@ -240,8 +246,10 @@ class QueryNewsService:
             # getting from cache
             news = self.redis.get(news_id)
             if news:
+                logging.info('from cache')
                 return news
             news = NewsQueryModel.objects.get(id=news_id)
+            logging.info('from DB')
             return news.to_json()
         except mongoengine.DoesNotExist as e:
             logging.error(e)
