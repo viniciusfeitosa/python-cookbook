@@ -1,3 +1,4 @@
+import json
 import logging
 import uuid
 
@@ -11,17 +12,15 @@ from nameko_sqlalchemy import DatabaseSession
 from .models.orders import (
     Base,
     Orders,
-    # OrderLines,
 )
 from .schemas.orders import OrdersSchema
 
 
 class OrdersServiceAPI:
     name = 'orders_service_api'
-    query_stack = RpcProxy('query_stack')
-    command_stack = RpcProxy('command_stack')
+    orders_domain = RpcProxy('orders_domain')
 
-    @http('POST', '/create_orders')
+    @http('POST', '/create_order')
     def create_orders(self, request):
         schema = OrdersSchema(strict=True)
         try:
@@ -30,38 +29,41 @@ class OrdersServiceAPI:
             return 400, 'Invalid payload'
 
         try:
-            orders_id = self.command_stack.orders_domain(data)
-            localtion = {
-                'Location': 'http://localhost:5000/orders/{}'.format(orders_id)
-            }
-            return 202, localtion, 'ACCEPTED'
+            order_id = self.orders_domain.create_order(data)
+            return 201, {'Content-Type': 'application/json'}, json.dumps(
+                {'order_id': order_id}
+            )
         except Exception as e:
             logging.error(e)
             return 500, 'Internal Server Error'
 
-    @http('GET', '/orders/list/page/<int:page>/limit/<int:limit>')
-    def list_orders(self, request, page, limit):
-        respose_data = self.query_stack.list_orders(page, limit)
-        return 200, {'Content-Type': 'application/json'}, respose_data
-
-    @http('GET', '/orders/<string:orders_id>')
-    def get_orders(self, request, orders_id):
-        respose_data = self.query_stack.get_orders(orders_id)
+    @http('GET', '/orders/<string:order_id>')
+    def get_orders(self, request, order_id):
+        respose_data = self.orders_domain.get_order(order_id)
         return 200, {'Content-Type': 'application/json'}, respose_data
 
 
-class CommandOrdersService:
+class OrdersDomain:
+    name = 'orders_domain'
     db = DatabaseSession(Base)
 
     @rpc
-    def orders_domain(self, data):
+    def create_order(self, data):
         try:
             data['id'] = str(uuid.uuid1())
             orders = Orders(data)
             self.db.add(orders)
             self.db.commit()
-            self.dispatcher('orders_created', data)
             return data.get('id')
+        except Exception as e:
+            self.db.rollback()
+            logging.error(e)
+
+    @rpc
+    def get_order(self, id):
+        try:
+            order = self.db.query(Orders).get(id)
+            return json.dumps(order.to_dict())
         except Exception as e:
             self.db.rollback()
             logging.error(e)
