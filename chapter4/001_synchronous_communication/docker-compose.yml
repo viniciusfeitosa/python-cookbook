@@ -1,0 +1,83 @@
+version: '3'
+
+services:
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # RabbitMQ
+  # ----------------------------------------
+  # ----------------------------------------
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    restart: always
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # Orders Service
+  # ----------------------------------------
+  # ----------------------------------------
+
+  # Database Container
+  orders_service_db:
+    build: ./orders_service/db
+    ports:
+      - 5432:5432  # expose ports - HOST:CONTAINER
+    healthcheck:
+      test: exit 0
+    restart: always
+
+  # Orders Service
+  orders_service:
+    build: ./orders_service
+    volumes:
+      - './orders_service:/app'
+    environment:
+      - QUEUE_HOST=amqp://guest:guest@rabbitmq
+      - WEB_SERVER_ADDRESS=0.0.0.0:5000
+      - DATABASE_URL=postgresql://postgres:postgres@orders_service_db:5432/orders_db?sslmode=disable
+    depends_on:
+      - orders_service_db
+      - rabbitmq
+    ports:
+      - 5000:5000
+    restart: always
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # Payment Service
+  # ----------------------------------------
+  # ----------------------------------------
+
+  # Database Container
+  payment_service_db:
+    build: ./payment_service/db
+    ports:
+      - 5433:5432  # expose ports - HOST:CONTAINER
+    healthcheck:
+      test: exit 0
+    restart: always
+
+  # payment Service
+  payment_service:
+    build: ./payment_service
+    volumes:
+      - './payment_service:/app'
+    environment:
+      - QUEUE_HOST=amqp://guest:guest@rabbitmq
+      - WEB_SERVER_ADDRESS=0.0.0.0:5001
+      - DATABASE_URL=postgresql://postgres:postgres@payment_service_db:5433/payment_db?sslmode=disable
+    depends_on:
+      - payment_service_db
+      - rabbitmq
+    ports:
+      - 5001:5001
+    restart: always

@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # RabbitMQ
+  # ----------------------------------------
+  # ----------------------------------------
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    restart: always
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # News Service CQRS
+  # ----------------------------------------
+  # ----------------------------------------
+
+  # Command Stack
+  news_service_cqrs_command_db:
+    build: ./news_service_cqrs/command_db
+    ports:
+      - 5432:5432  # expose ports - HOST:CONTAINER
+    healthcheck:
+      test: exit 0
+    restart: always
+
+  # Query Stack
+  news_service_cqrs_query_db:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    command: [ "mongod", "--smallfiles", "--logpath=/dev/null" ]
+    healthcheck:
+      test: exit 0
+    restart: always
+
+  # News Microservice
+  news_nameko_cqrs:
+    image: news_nameko_cqrs
+    build: ./news_service_cqrs
+    volumes:
+      - './news_service_cqrs:/app'
+    environment:
+      - QUEUE_HOST=amqp://guest:guest@rabbitmq
+      - WEB_SERVER_ADDRESS=0.0.0.0:5001
+      - QUERY_DATABASE_URL=mongodb://news_service_cqrs_query_db:27017/
+      - COMMAND_DATABASE_URL=postgresql://postgres:postgres@news_service_cqrs_command_db:5432/news_db?sslmode=disable
+    depends_on:
+      - news_service_cqrs_command_db
+      - news_service_cqrs_query_db
+      - rabbitmq
+    ports:
+      - 5001:5001
+    restart: always
