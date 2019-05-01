@@ -1,0 +1,20 @@
+POST http://localhost:5000/create_order
+content-type: application/json
+
+{
+    "customer_id": "jdsjfklfhdjofhsjofdhos",
+    "order_lines": [
+        {
+            "product_id": "kjsjgniojfdgiojei",
+            "product_price": 10.30
+        },
+        {
+            "product_id": "vsdjiofsdoisdjkvshivi",
+            "product_price": 300.10
+        }
+    ]
+}
+
+###
+
+GET http://localhost:5000/orders/0df0aa9e-6c4d-11e9-86f7-0242ac1a0004

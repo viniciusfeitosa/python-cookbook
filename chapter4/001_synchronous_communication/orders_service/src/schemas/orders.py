@@ -11,5 +11,5 @@ class OrderLineSchema(Schema):
 class OrderSchema(Schema):
     id = fields.Str(dump_only=True)
     customer_id = fields.Str(required=True)
-    order_lines = fields.List(OrderLineSchema, required=True)
+    order_lines = fields.List(fields.Nested(OrderLineSchema), required=True)
     created_at = fields.DateTime(dump_only=True)

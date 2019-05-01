@@ -57,27 +57,27 @@ services:
   # ----------------------------------------
   # ----------------------------------------
 
-  # Database Container
-  payment_service_db:
-    build: ./payment_service/db
-    ports:
-      - 5433:5432  # expose ports - HOST:CONTAINER
-    healthcheck:
-      test: exit 0
-    restart: always
-
-  # payment Service
-  payment_service:
-    build: ./payment_service
-    volumes:
-      - './payment_service:/app'
-    environment:
-      - QUEUE_HOST=amqp://guest:guest@rabbitmq
-      - WEB_SERVER_ADDRESS=0.0.0.0:5001
-      - DATABASE_URL=postgresql://postgres:postgres@payment_service_db:5433/payment_db?sslmode=disable
-    depends_on:
-      - payment_service_db
-      - rabbitmq
-    ports:
-      - 5001:5001
-    restart: always
+  # # Database Container
+  # payment_service_db:
+  #   build: ./payment_service/db
+  #   ports:
+  #     - 5433:5432  # expose ports - HOST:CONTAINER
+  #   healthcheck:
+  #     test: exit 0
+  #   restart: always
+  #
+  # # payment Service
+  # payment_service:
+  #   build: ./payment_service
+  #   volumes:
+  #     - './payment_service:/app'
+  #   environment:
+  #     - QUEUE_HOST=amqp://guest:guest@rabbitmq
+  #     - WEB_SERVER_ADDRESS=0.0.0.0:5001
+  #     - DATABASE_URL=postgresql://postgres:postgres@payment_service_db:5433/payment_db?sslmode=disable
+  #   depends_on:
+  #     - payment_service_db
+  #     - rabbitmq
+  #   ports:
+  #     - 5001:5001
+  #   restart: always

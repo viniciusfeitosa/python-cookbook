@@ -8,12 +8,14 @@ from nameko.rpc import (
 )
 from nameko.web.handlers import http
 from nameko_sqlalchemy import DatabaseSession
+from sqlalchemy.orm import joinedload
 
 from .models.orders import (
     Base,
     Orders,
+    OrderLines,
 )
-from .schemas.orders import OrdersSchema
+from .schemas.orders import OrderSchema
 
 
 class OrdersServiceAPI:
@@ -22,10 +24,14 @@ class OrdersServiceAPI:
 
     @http('POST', '/create_order')
     def create_orders(self, request):
-        schema = OrdersSchema(strict=True)
+        schema = OrderSchema(strict=True)
         try:
             data = schema.loads(request.get_data(as_text=True)).data
-        except ValueError:
+        except ValueError as ex:
+            logging.info(
+                'Data received: {}'.format(request.get_data(as_text=True))
+            )
+            logging.error(ex)
             return 400, 'Invalid payload'
 
         try:
@@ -51,6 +57,17 @@ class OrdersDomain:
     def create_order(self, data):
         try:
             data['id'] = str(uuid.uuid1())
+            logging.info('data: {}'.format(data))
+
+            # updating order lines
+            order_lines_updated = []
+            for ol in data['order_lines']:
+                ol['id'] = str(uuid.uuid1())
+                ol['order_id'] = data['id']
+                order_lines_updated.append(OrderLines(ol))
+            data['order_lines'] = order_lines_updated
+            logging.info('data updated: {}'.format(data))
+
             orders = Orders(data)
             self.db.add(orders)
             self.db.commit()
@@ -62,8 +79,22 @@ class OrdersDomain:
     @rpc
     def get_order(self, id):
         try:
-            order = self.db.query(Orders).get(id)
-            return json.dumps(order.to_dict())
+            order = self.db.query(Orders).options(
+                joinedload(Orders.order_lines)).get(id)
+            order_response = {
+                "id": order.id,
+                "customer_id": order.customer_id,
+                "order_lines": [
+                    {
+                        "id": ol.id,
+                        "order_id": ol.order_id,
+                        "product_id": ol.product_id,
+                        "product_price": ol.product_price,
+                    }
+                    for ol in order.order_lines
+                ]
+            }
+            return json.dumps(order_response)
         except Exception as e:
             self.db.rollback()
             logging.error(e)

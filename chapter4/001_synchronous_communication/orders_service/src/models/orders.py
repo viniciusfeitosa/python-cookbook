@@ -5,7 +5,6 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
-    Integer,
     String,
 )
 from sqlalchemy.ext.declarative import declarative_base
@@ -32,7 +31,7 @@ class Orders(Base):
 class OrderLines(Base):
     __tablename__ = 'order_lines'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(String(250), primary_key=True)
     order_id = Column(String(250), ForeignKey('orders.id'))
     product_id = Column(String(250))
     product_price = Column(Float)
