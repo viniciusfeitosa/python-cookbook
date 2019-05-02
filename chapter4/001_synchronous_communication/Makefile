@@ -18,11 +18,17 @@ up:
 		sleep 5
 		docker-compose -f docker-compose.yml ps
 
-initmigration:
+initmigration_orders:
 		docker-compose -f docker-compose.yml exec orders_service alembic revision --autogenerate -m "baseline"
 
-migrate:
+migrate_orders:
 		docker-compose -f docker-compose.yml exec orders_service alembic upgrade head
+
+initmigration_payments:
+		docker-compose -f docker-compose.yml exec payment_service alembic revision --autogenerate -m "baseline"
+
+migrate_payments:
+		docker-compose -f docker-compose.yml exec payment_service alembic upgrade head
 
 status:
 		docker-compose -f docker-compose.yml ps
