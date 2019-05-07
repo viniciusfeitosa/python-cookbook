@@ -1,0 +1,23 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+flake8 = "*"
+pep8 = "*"
+jedi = "*"
+rope = "*"
+autopep8 = "*"
+yapf = "*"
+
+[packages]
+nameko = "*"
+nameko-sqlalchemy = "*"
+nameko-grpc = "*"
+psycopg2-binary = "*"
+marshmallow = "*"
+alembic = "*"
+
+[requires]
+python_version = "3.7"
