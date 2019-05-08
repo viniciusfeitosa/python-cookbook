@@ -51,17 +51,19 @@ class OrdersServiceAPI:
             return 500, 'Internal Server Error'
 
     @grpc
-    def GetOrderByID(self, request, context):
-        response_data = self.orders_domain.get_order(request.orderId)
+    def get_order_by_id(self, request, context):
+        response_data = json.loads(
+            self.orders_domain.get_order(request.order_id)
+        )
         return OrderResponse(
             id=response_data.get('id'),
-            customerId=response_data.get('customer_id'),
-            orderLines=[
+            customer_id=response_data.get('customer_id'),
+            order_lines=[
                 OrderLine(
                     id=ol.get('id'),
-                    orderId=ol.get('order_id'),
-                    productId=ol.get('product_id'),
-                    productPrice=ol.get('product_price'),
+                    order_id=ol.get('order_id'),
+                    product_id=ol.get('product_id'),
+                    product_price=ol.get('product_price'),
                 )
                 for ol in response_data.get('order_lines')
             ],

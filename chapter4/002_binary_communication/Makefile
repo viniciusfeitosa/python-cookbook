@@ -18,6 +18,12 @@ up:
 		sleep 5
 		docker-compose -f docker-compose.yml ps
 
+run:
+		docker stop $(shell docker ps -aq)
+		docker-compose -f docker-compose.yml up -d
+		sleep 5
+		docker-compose -f docker-compose.yml ps
+
 initmigration_orders:
 		docker-compose -f docker-compose.yml exec orders_service alembic revision --autogenerate -m "baseline"
 

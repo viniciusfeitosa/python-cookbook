@@ -18,8 +18,8 @@ class OrderStub(object):
     Args:
       channel: A grpc.Channel.
     """
-    self.GetOrderByID = channel.unary_unary(
-        '/Order/GetOrderByID',
+    self.get_order_by_id = channel.unary_unary(
+        '/Order/get_order_by_id',
         request_serializer=order__pb2.OrderRequest.SerializeToString,
         response_deserializer=order__pb2.OrderResponse.FromString,
         )
@@ -29,7 +29,7 @@ class OrderServicer(object):
   # missing associated documentation comment in .proto file
   pass
 
-  def GetOrderByID(self, request, context):
+  def get_order_by_id(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -39,8 +39,8 @@ class OrderServicer(object):
 
 def add_OrderServicer_to_server(servicer, server):
   rpc_method_handlers = {
-      'GetOrderByID': grpc.unary_unary_rpc_method_handler(
-          servicer.GetOrderByID,
+      'get_order_by_id': grpc.unary_unary_rpc_method_handler(
+          servicer.get_order_by_id,
           request_deserializer=order__pb2.OrderRequest.FromString,
           response_serializer=order__pb2.OrderResponse.SerializeToString,
       ),

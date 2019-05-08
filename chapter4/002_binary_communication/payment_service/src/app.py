@@ -60,18 +60,18 @@ class PaymentsDomain:
     @rpc
     def do_payment(self, data):
         try:
-            order = self.grpc.unary_unary(
-                OrderRequest(id=data.get('order_id'))
+            order = self.grpc.get_order_by_id(
+                OrderRequest(order_id=data.get('order_id'))
             )
 
             payments = Payments({
                 "id": str(uuid.uuid1()),
-                "customer_id": order.customerId,
+                "customer_id": order.customer_id,
                 "order_id": data.get('order_id'),
                 "value_processed": sum(
                     [
-                        order.productPrice
-                        for order in order.orderLines
+                        o.product_price
+                        for o in order.order_lines
                     ]
                 )
             })

@@ -25,9 +25,9 @@ POST http://localhost:5001/do_payment
 content-type: application/json
 
 {
-    "order_id": "1f6a48fc-708a-11e9-8965-0242ac120005"
+    "order_id": "99fa4020-713b-11e9-b5a8-0242ac120005"
 }
 
 ###
 
-GET http://localhost:5001/payments/72147422-6c86-11e9-9d3f-0242ac1b0006
+GET http://localhost:5001/payments/a30dd62c-713b-11e9-add6-0242ac120006
