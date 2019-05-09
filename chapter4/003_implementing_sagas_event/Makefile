@@ -30,5 +30,15 @@ initmigration_payments:
 migrate_payments:
 		docker-compose -f docker-compose.yml exec payment_service alembic upgrade head
 
+initmigration_inventory:
+		docker-compose -f docker-compose.yml exec inventory_service alembic revision --autogenerate -m "baseline"
+
+migrate_inventory:
+		docker-compose -f docker-compose.yml exec inventory_service alembic upgrade head
+
+initmigration:	initmigration_orders initmigration_payments	initmigration_inventory
+
+migrate: migrate_orders	migrate_payments migrate_inventory
+
 status:
 		docker-compose -f docker-compose.yml ps

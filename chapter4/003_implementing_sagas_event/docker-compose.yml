@@ -47,6 +47,8 @@ services:
     depends_on:
       - orders_service_db
       - rabbitmq
+      - payment_service
+      - inventory_service
     ports:
       - 5000:5000
     restart: always
@@ -65,7 +67,7 @@ services:
     healthcheck:
       test: exit 0
     restart: always
-  
+
   # payment Service
   payment_service:
     build: ./payment_service
@@ -74,12 +76,41 @@ services:
     environment:
       - QUEUE_HOST=amqp://guest:guest@rabbitmq
       - WEB_SERVER_ADDRESS=0.0.0.0:5001
-      - ORDERS_URL=orders_service:5000
       - DATABASE_URL=postgresql://postgres:postgres@payment_service_db:5432/payment_db?sslmode=disable
     depends_on:
       - payment_service_db
       - rabbitmq
-      - orders_service
     ports:
       - 5001:5001
+    restart: always
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # Inventory Service
+  # ----------------------------------------
+  # ----------------------------------------
+
+  # Database Container
+  inventory_service_db:
+    build: ./inventory_service/db
+    ports:
+      - 5433:5432  # expose ports - HOST:CONTAINER
+    healthcheck:
+      test: exit 0
+    restart: always
+
+  # inventory Service
+  inventory_service:
+    build: ./inventory_service
+    volumes:
+      - './inventory_service:/app'
+    environment:
+      - QUEUE_HOST=amqp://guest:guest@rabbitmq
+      - WEB_SERVER_ADDRESS=0.0.0.0:5002
+      - DATABASE_URL=postgresql://postgres:postgres@inventory_service_db:5432/inventory_db?sslmode=disable
+    depends_on:
+      - inventory_service_db
+      - rabbitmq
+    ports:
+      - 5002:5002
     restart: always
