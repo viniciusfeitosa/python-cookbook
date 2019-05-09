@@ -1,0 +1,16 @@
+AMQP_URI: ${QUEUE_HOST}
+WEB_SERVER_ADDRESS: ${WEB_SERVER_ADDRESS}
+max_workers: 10
+parent_calls_tracked: 10
+
+DB_URIS:
+    "payments_domain:Base": ${DATABASE_URL}
+
+LOGGING:
+    version: 1
+    handlers:
+        console:
+            class: logging.StreamHandler
+    root:
+        level: DEBUG
+        handlers: [console]

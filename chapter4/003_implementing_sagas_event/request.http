@@ -1,0 +1,33 @@
+POST http://localhost:5000/create_order
+content-type: application/json
+
+{
+    "customer_id": "jdsjfklfhdjofhsjofdhos",
+    "order_lines": [
+        {
+            "product_id": "kjsjgniojfdgiojei",
+            "product_price": 10.30
+        },
+        {
+            "product_id": "vsdjiofsdoisdjkvshivi",
+            "product_price": 300.10
+        }
+    ]
+}
+
+###
+
+GET http://localhost:5000/orders/a2c3a890-6c81-11e9-8383-0242ac1b0005
+
+###
+
+POST http://localhost:5001/do_payment
+content-type: application/json
+
+{
+    "order_id": "a2c3a890-6c81-11e9-8383-0242ac1b0005"
+}
+
+###
+
+GET http://localhost:5001/payments/72147422-6c86-11e9-9d3f-0242ac1b0006
