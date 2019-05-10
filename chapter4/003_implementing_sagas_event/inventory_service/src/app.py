@@ -13,7 +13,10 @@ from .models.inventory import (
     Base,
     Product,
 )
-from .schemas.inventory import ProductSchema
+from .schemas.inventory import (
+    ProductSchema,
+    ProductStockSchema,
+)
 
 
 class InventoryServiceAPI:
@@ -41,6 +44,25 @@ class InventoryServiceAPI:
             logging.error(e)
             return 500, 'Internal Server Error'
 
+    @http('PUT', 'update_stock/product/<string:product_id>')
+    def update_product_stock(self, request, product_id):
+        schema = ProductStockSchema(strict=True)
+        try:
+            data = schema.loads(request.get_data(as_text=True)).data
+            if data.get('stock') < 0:
+                raise ValueError('Stock can not be a negative value')
+        except ValueError as ex:
+            logging.info(
+                'Data received: {}'.format(request.get_data(as_text=True))
+            )
+            logging.error(ex)
+            return 400, 'Invalid payload'
+
+        try:
+            self.inventory_domain.update_product_stock(product_id, data)
+        except Exception as e:
+            return 500, str(e)
+
     @http('GET', '/inventory/product/<string:product_id>')
     def get_orders(self, request, product_id):
         respose_data = self.inventory_domain.get_product(product_id)
@@ -58,6 +80,18 @@ class InventoryDomain:
             logging.info('data: {}'.format(data))
 
             product = Product(data)
+            self.db.add(product)
+            self.db.commit()
+            return data.get('id')
+        except Exception as e:
+            self.db.rollback()
+            logging.error(e)
+
+    @rpc
+    def update_product_stock(self, product_id, data):
+        try:
+            product = self.db.query(Product).get(product_id)
+            product.stock = product.stock + data.get('stock')
             self.db.add(product)
             self.db.commit()
             return data.get('id')
