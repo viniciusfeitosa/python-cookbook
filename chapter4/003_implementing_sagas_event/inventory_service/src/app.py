@@ -2,6 +2,10 @@ import json
 import logging
 import uuid
 
+from nameko.events import (
+    event_handler,
+    EventDispatcher
+)
 from nameko.rpc import (
     rpc,
     RpcProxy,
@@ -64,9 +68,30 @@ class InventoryServiceAPI:
             return 500, str(e)
 
     @http('GET', '/inventory/product/<string:product_id>')
-    def get_orders(self, request, product_id):
+    def get_products(self, request, product_id):
         respose_data = self.inventory_domain.get_product(product_id)
         return 200, {'Content-Type': 'application/json'}, respose_data
+
+
+class InventoryHandler:
+    name = 'inventory_handler'
+    inventory_domain = RpcProxy('inventory_domain')
+    dispatcher = EventDispatcher()
+
+    @event_handler('payments_domain', 'order_paid')
+    def decrease_stock(self, payload):
+        try:
+            data = json.loads(payload)
+            self.inventory_domain.decrease_stock(data)
+        except Exception as ex:
+            self.dispatcher(
+                'error',
+                json.dumps({
+                    'order_id': data.get('id'),
+                    'error': str(ex),
+                })
+            )
+            logging.error(str(ex))
 
 
 class InventoryDomain:
@@ -88,13 +113,15 @@ class InventoryDomain:
             logging.error(e)
 
     @rpc
-    def update_product_stock(self, product_id, data):
+    def decrease_stock(self, data):
         try:
-            product = self.db.query(Product).get(product_id)
-            product.stock = product.stock + data.get('stock')
-            self.db.add(product)
-            self.db.commit()
-            return data.get('id')
+            for ol in data.get('order_lines'):
+                product = self.db.query(Product).get(ol.get('product_id'))
+                quantity = ol.get('product_price') / product.product_price
+                product.stock = product.stock - int(quantity)
+                self.db.add(product)
+                self.db.commit()
+            return 'ok'
         except Exception as e:
             self.db.rollback()
             logging.error(e)

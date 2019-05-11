@@ -10,7 +10,6 @@ jedi = "*"
 rope = "*"
 autopep8 = "*"
 yapf = "*"
-requests = "*"
 
 [packages]
 nameko = "*"

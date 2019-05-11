@@ -1,9 +1,11 @@
 import json
 import logging
-import os
 import uuid
-import requests
 
+from nameko.events import (
+    event_handler,
+    EventDispatcher
+)
 from nameko.rpc import (
     rpc,
     RpcProxy,
@@ -22,31 +24,52 @@ class PaymentsServiceAPI:
     name = 'payments_service_api'
     payments_domain = RpcProxy('payments_domain')
 
-    @http('POST', '/do_payment')
-    def do_payments(self, request):
-        schema = PaymentSchema(strict=True)
-        try:
-            data = schema.loads(request.get_data(as_text=True)).data
-        except ValueError as ex:
-            logging.info(
-                'Data received: {}'.format(request.get_data(as_text=True))
-            )
-            logging.error(ex)
-            return 400, 'Invalid payload'
-
-        try:
-            payment_id = self.payments_domain.do_payment(data)
-            return 201, {'Content-Type': 'application/json'}, json.dumps(
-                {'payment_id': payment_id}
-            )
-        except Exception as e:
-            logging.error(e)
-            return 500, 'Internal Server Error'
-
     @http('GET', '/payments/<string:payment_id>')
     def get_payments(self, request, payment_id):
         respose_data = self.payments_domain.get_payment(payment_id)
         return 200, {'Content-Type': 'application/json'}, respose_data
+
+
+class PaymentsHandler:
+    name = 'payments_handler'
+    payments_domain = RpcProxy('payments_domain')
+    dispatcher = EventDispatcher()
+
+    @event_handler('orders_domain', 'order_created')
+    def do_payment(self, payload):
+        schema = PaymentSchema(strict=True)
+        try:
+            data = schema.loads(payload).data
+        except ValueError as ex:
+            logging.info('Data received: {}'.format(payload))
+            self.dispatcher(
+                'error',
+                json.dumps({
+                    'order_id': data.get('id'),
+                    'error': str(ex),
+                })
+            )
+            logging.error(ex)
+
+        try:
+            data['payment_id'] = self.payments_domain.do_payment(data)
+            self.dispatcher('order_paid', json.dumps(data))
+        except Exception as ex:
+            self.dispatcher(
+                'error',
+                json.dumps({
+                    'order_id': data.get('id'),
+                    'error': str(ex),
+                })
+            )
+            logging.error(ex)
+
+    @event_handler('inventory_domain', 'inventory_error')
+    def revert_payment(self, payment_id):
+        try:
+            self.payments_domain.delete_payment(payment_id)
+        except Exception as ex:
+            logging.error(str(ex))
 
 
 class PaymentsDomain:
@@ -56,14 +79,7 @@ class PaymentsDomain:
     @rpc
     def do_payment(self, data):
         try:
-            req = requests.get(
-                'http://{}/orders/{}'.format(
-                    os.getenv('ORDERS_URL'),
-                    data.get('order_id'),
-                )
-            )
-            order = req.json()
-
+            order = json.loads(data)
             payments = Payments({
                 "id": str(uuid.uuid1()),
                 "customer_id": order.get('customer_id'),
@@ -93,6 +109,17 @@ class PaymentsDomain:
                 "value_processed": payment.value_processed,
             }
             return json.dumps(payment_response)
+        except Exception as e:
+            self.db.rollback()
+            logging.error(e)
+
+    @rpc
+    def delete_payment(self, payment_id):
+        try:
+            payment = self.db.query(Payments).get(id)
+            self.db.delete(payment)
+            self.db.commit()
+            return payment_id
         except Exception as e:
             self.db.rollback()
             logging.error(e)

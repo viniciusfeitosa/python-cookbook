@@ -2,6 +2,10 @@ import json
 import logging
 import uuid
 
+from nameko.events import (
+    event_handler,
+    EventDispatcher
+)
 from nameko.rpc import (
     rpc,
     RpcProxy,
@@ -49,9 +53,22 @@ class OrdersServiceAPI:
         return 200, {'Content-Type': 'application/json'}, respose_data
 
 
+class OrdersHandler:
+    name = 'orders_handler'
+    orders_domain = RpcProxy('orders_domain')
+
+    @event_handler('payments_handler', 'error')
+    @event_handler('inventory_handler', 'error')
+    def compensatory_orders(self, payload):
+        data = json.loads(payload)
+        order_id = self.orders_domain.delete_order(data.get('order_id'))
+        logging.info('Order {} deleted'.format(order_id))
+
+
 class OrdersDomain:
     name = 'orders_domain'
     db = DatabaseSession(Base)
+    dispatcher = EventDispatcher()
 
     @rpc
     def create_order(self, data):
@@ -71,6 +88,7 @@ class OrdersDomain:
             orders = Orders(data)
             self.db.add(orders)
             self.db.commit()
+            self.dispatcher('order_created', json.dumps(data))
             return data.get('id')
         except Exception as e:
             self.db.rollback()
@@ -95,6 +113,17 @@ class OrdersDomain:
                 ]
             }
             return json.dumps(order_response)
+        except Exception as e:
+            self.db.rollback()
+            logging.error(e)
+
+    @rpc
+    def delete_order(self, id):
+        try:
+            order = self.db.query(Orders).get(id)
+            self.db.delete(order)
+            self.db.commit()
+            return id
         except Exception as e:
             self.db.rollback()
             logging.error(e)
