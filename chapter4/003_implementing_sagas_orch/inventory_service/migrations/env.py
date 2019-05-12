@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from src.models.orders import Base  # noqa
+from src.models.inventory import Base  # noqa
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,

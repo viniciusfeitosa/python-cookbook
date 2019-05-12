@@ -27,6 +27,21 @@ class Orders(Base):
         self.customer_id = data.get('customer_id')
         self.order_lines = data.get('order_lines')
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "customer_id": self.customer_id,
+            "order_lines": [
+                {
+                    "id": ol.id,
+                    "order_id": ol.order_id,
+                    "product_id": ol.product_id,
+                    "product_price": ol.product_price,
+                }
+                for ol in self.order_lines
+            ]
+        }
+
 
 class OrderLines(Base):
     __tablename__ = 'order_lines'

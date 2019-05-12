@@ -3,8 +3,9 @@ import logging
 import uuid
 
 from nameko.events import (
+    BROADCAST,
     event_handler,
-    EventDispatcher
+    EventDispatcher,
 )
 from nameko.rpc import (
     rpc,
@@ -49,8 +50,12 @@ class OrdersServiceAPI:
 
     @http('GET', '/orders/<string:order_id>')
     def get_orders(self, request, order_id):
-        respose_data = self.orders_domain.get_order(order_id)
-        return 200, {'Content-Type': 'application/json'}, respose_data
+        response_data = self.orders_domain.get_order(order_id)
+        if response_data:
+            return 200, {'Content-Type': 'application/json'}, response_data
+        return 404, \
+            {'Content-Type': 'application/json'}, \
+            json.dumps({'error': 'Not found {}'.format(order_id)})
 
 
 class OrdersHandler:
@@ -58,8 +63,14 @@ class OrdersHandler:
     orders_domain = RpcProxy('orders_domain')
 
     @event_handler('payments_handler', 'error')
-    @event_handler('inventory_handler', 'error')
-    def compensatory_orders(self, payload):
+    @event_handler(
+        'inventory_handler',
+        'error',
+        handler_type=BROADCAST,
+        reliable_delivery=False,
+    )
+    def revert_orders(self, payload):
+        logging.info('### Payload: {} ###'.format(payload))
         data = json.loads(payload)
         order_id = self.orders_domain.delete_order(data.get('order_id'))
         logging.info('Order {} deleted'.format(order_id))
@@ -102,10 +113,8 @@ class OrdersDomain:
         try:
             order = self.db.query(Orders).options(
                 joinedload(Orders.order_lines)).get(id)
-            order_response = order.to_dict()
-            return json.dumps(order_response)
+            return json.dumps(order.to_dict()) if order else ''
         except Exception as e:
-            self.db.rollback()
             logging.error(e)
 
     @rpc

@@ -3,8 +3,9 @@ import logging
 import uuid
 
 from nameko.events import (
+    BROADCAST,
     event_handler,
-    EventDispatcher
+    EventDispatcher,
 )
 from nameko.rpc import (
     rpc,
@@ -50,7 +51,12 @@ class PaymentsHandler:
             )
             logging.error(str(ex))
 
-    @event_handler('inventory_domain', 'inventory_error')
+    @event_handler(
+        'inventory_handler',
+        'error',
+        handler_type=BROADCAST,
+        reliable_delivery=False,
+    )
     def revert_payment(self, payment_id):
         try:
             self.payments_domain.delete_payment(payment_id)
