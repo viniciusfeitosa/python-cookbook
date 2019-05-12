@@ -17,7 +17,6 @@ from .models.payments import (
     Base,
     Payments,
 )
-from .schemas.payments import PaymentSchema
 
 
 class PaymentsServiceAPI:
@@ -37,13 +36,9 @@ class PaymentsHandler:
 
     @event_handler('orders_domain', 'order_created')
     def do_payment(self, payload):
-        logging.info('Starting do_payment')
-        logging.info('Payload received: {}'.format(payload))
         data = json.loads(payload)
-        logging.info('Payload converted to dict: {}'.format(data))
         try:
             data['payment_id'] = self.payments_domain.do_payment(payload)
-            logging.info('Dispatching data: {}'.format(data))
             self.dispatcher('order_paid', json.dumps(data))
         except Exception as ex:
             self.dispatcher(
@@ -70,7 +65,6 @@ class PaymentsDomain:
     @rpc
     def do_payment(self, data):
         try:
-            logging.info('Data received on PaymentDomain: {}'.format(data))
             order = json.loads(data)
             payments = Payments({
                 "id": str(uuid.uuid1()),
