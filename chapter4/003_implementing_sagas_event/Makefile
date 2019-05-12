@@ -19,7 +19,7 @@ build-up:
 		docker-compose -f docker-compose.yml ps
 
 up:
-		# docker stop $(shell docker ps -aq)
+		docker stop $(shell docker ps -aq)
 		docker-compose -f docker-compose.yml up -d
 		sleep 5
 		docker-compose -f docker-compose.yml ps

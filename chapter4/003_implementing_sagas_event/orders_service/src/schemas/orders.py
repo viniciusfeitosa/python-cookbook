@@ -13,4 +13,3 @@ class OrderSchema(Schema):
     customer_id = fields.Str(required=True)
     order_lines = fields.List(fields.Nested(OrderLineSchema), required=True)
     created_at = fields.DateTime(dump_only=True)
-

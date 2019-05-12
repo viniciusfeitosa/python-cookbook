@@ -88,7 +88,10 @@ class OrdersDomain:
             orders = Orders(data)
             self.db.add(orders)
             self.db.commit()
-            self.dispatcher('order_created', json.dumps(data))
+            self.dispatcher(
+                'order_created',
+                json.dumps(orders.to_dict())
+            )
             return data.get('id')
         except Exception as e:
             self.db.rollback()
@@ -99,19 +102,7 @@ class OrdersDomain:
         try:
             order = self.db.query(Orders).options(
                 joinedload(Orders.order_lines)).get(id)
-            order_response = {
-                "id": order.id,
-                "customer_id": order.customer_id,
-                "order_lines": [
-                    {
-                        "id": ol.id,
-                        "order_id": ol.order_id,
-                        "product_id": ol.product_id,
-                        "product_price": ol.product_price,
-                    }
-                    for ol in order.order_lines
-                ]
-            }
+            order_response = order.to_dict()
             return json.dumps(order_response)
         except Exception as e:
             self.db.rollback()

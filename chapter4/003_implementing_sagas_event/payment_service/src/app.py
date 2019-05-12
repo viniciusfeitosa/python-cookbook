@@ -37,22 +37,13 @@ class PaymentsHandler:
 
     @event_handler('orders_domain', 'order_created')
     def do_payment(self, payload):
-        schema = PaymentSchema(strict=True)
+        logging.info('Starting do_payment')
+        logging.info('Payload received: {}'.format(payload))
+        data = json.loads(payload)
+        logging.info('Payload converted to dict: {}'.format(data))
         try:
-            data = schema.loads(payload).data
-        except ValueError as ex:
-            logging.info('Data received: {}'.format(payload))
-            self.dispatcher(
-                'error',
-                json.dumps({
-                    'order_id': data.get('id'),
-                    'error': str(ex),
-                })
-            )
-            logging.error(ex)
-
-        try:
-            data['payment_id'] = self.payments_domain.do_payment(data)
+            data['payment_id'] = self.payments_domain.do_payment(payload)
+            logging.info('Dispatching data: {}'.format(data))
             self.dispatcher('order_paid', json.dumps(data))
         except Exception as ex:
             self.dispatcher(
@@ -62,7 +53,7 @@ class PaymentsHandler:
                     'error': str(ex),
                 })
             )
-            logging.error(ex)
+            logging.error(str(ex))
 
     @event_handler('inventory_domain', 'inventory_error')
     def revert_payment(self, payment_id):
@@ -79,11 +70,12 @@ class PaymentsDomain:
     @rpc
     def do_payment(self, data):
         try:
+            logging.info('Data received on PaymentDomain: {}'.format(data))
             order = json.loads(data)
             payments = Payments({
                 "id": str(uuid.uuid1()),
                 "customer_id": order.get('customer_id'),
-                "order_id": data.get('order_id'),
+                "order_id": order.get('order_id'),
                 "value_processed": sum(
                     [
                         ol['product_price']
@@ -96,7 +88,7 @@ class PaymentsDomain:
             return payments.id
         except Exception as e:
             self.db.rollback()
-            logging.error(e)
+            raise Exception(str(e))
 
     @rpc
     def get_payment(self, id):
@@ -111,7 +103,7 @@ class PaymentsDomain:
             return json.dumps(payment_response)
         except Exception as e:
             self.db.rollback()
-            logging.error(e)
+            raise Exception(str(e))
 
     @rpc
     def delete_payment(self, payment_id):

@@ -2,15 +2,29 @@ POST http://localhost:5002/add_product
 content-type: application/json
 
 {
+    "name": "Microservices Design Patterns",
+    "price": 39.90,
+    "stock": 1000
+}
+
+###
+
+POST http://localhost:5002/add_product
+content-type: application/json
+
+{
     "name": "Python Microservices Cookbook",
     "price": 49.90,
     "stock": 1000
 }
 
+###
+
+GET http://localhost:5002/inventory/product/b824ad64-7470-11e9-98a8-0242ac130006
 
 ###
 
-GET http://localhost:5002/inventory/product/7d49262c-745a-11e9-b72e-0242ac130004
+GET http://localhost:5002/inventory/product/e4c7c036-7470-11e9-98a8-0242ac130006
 
 ###
 
@@ -21,15 +35,19 @@ content-type: application/json
     "customer_id": "jdsjfklfhdjofhsjofdhos",
     "order_lines": [
         {
-            "product_id": "kjsjgniojfdgiojei",
-            "product_price": 10.30
+            "product_id": "e4c7c036-7470-11e9-98a8-0242ac130006",
+            "product_price": 49.90
         },
         {
-            "product_id": "vsdjiofsdoisdjkvshivi",
-            "product_price": 300.10
+            "product_id": "b824ad64-7470-11e9-98a8-0242ac130006",
+            "product_price": 39.90
         }
     ]
 }
+
+###
+
+GET http://localhost:5000/orders/3b340e68-7474-11e9-b8fc-0242ac130008
 
 ###
 

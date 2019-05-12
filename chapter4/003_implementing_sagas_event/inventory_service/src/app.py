@@ -78,7 +78,7 @@ class InventoryHandler:
     inventory_domain = RpcProxy('inventory_domain')
     dispatcher = EventDispatcher()
 
-    @event_handler('payments_domain', 'order_paid')
+    @event_handler('payments_handler', 'order_paid')
     def decrease_stock(self, payload):
         try:
             data = json.loads(payload)
@@ -110,14 +110,15 @@ class InventoryDomain:
             return data.get('id')
         except Exception as e:
             self.db.rollback()
-            logging.error(e)
+            raise Exception(str(e))
 
     @rpc
     def decrease_stock(self, data):
         try:
+            logging.info('Data received InventoryDomain {}'.format(data))
             for ol in data.get('order_lines'):
                 product = self.db.query(Product).get(ol.get('product_id'))
-                quantity = ol.get('product_price') / product.product_price
+                quantity = ol.get('product_price') / product.price
                 product.stock = product.stock - int(quantity)
                 self.db.add(product)
                 self.db.commit()
