@@ -48,7 +48,7 @@ class InventoryServiceAPI:
             logging.error(e)
             return 500, 'Internal Server Error'
 
-    @http('PUT', 'update_stock/product/<string:product_id>')
+    @http('PUT', '/update_stock/product/<string:product_id>')
     def update_product_stock(self, request, product_id):
         schema = ProductStockSchema(strict=True)
         try:
@@ -127,15 +127,14 @@ class InventoryDomain:
             logging.error(e)
 
     @rpc
-    def get_product(self, id):
+    def get_product(self, product_id):
         try:
-            product = self.db.query(Product).get(id)
+            product = self.db.query(Product).get(product_id)
             product_response = {
                 'id': product.id,
                 'name': product.name,
                 'price': product.price,
                 'stock': product.stock,
-                'created_at': product.created_at,
             }
             return json.dumps(product_response)
         except Exception as e:

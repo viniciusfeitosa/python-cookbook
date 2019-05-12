@@ -12,9 +12,15 @@ destroy:
 		docker rm $(shell docker ps -aq)
 		docker rmi -f $(shell docker images -q)
 
-up:
+build-up:
 		# docker stop $(shell docker ps -aq)
 		docker-compose -f docker-compose.yml up --build -d
+		sleep 5
+		docker-compose -f docker-compose.yml ps
+
+up:
+		# docker stop $(shell docker ps -aq)
+		docker-compose -f docker-compose.yml up -d
 		sleep 5
 		docker-compose -f docker-compose.yml ps
 

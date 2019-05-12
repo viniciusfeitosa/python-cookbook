@@ -1,3 +1,19 @@
+POST http://localhost:5002/add_product
+content-type: application/json
+
+{
+    "name": "Python Microservices Cookbook",
+    "price": 49.90,
+    "stock": 1000
+}
+
+
+###
+
+GET http://localhost:5002/inventory/product/7d49262c-745a-11e9-b72e-0242ac130004
+
+###
+
 POST http://localhost:5000/create_order
 content-type: application/json
 
@@ -14,10 +30,6 @@ content-type: application/json
         }
     ]
 }
-
-###
-
-GET http://localhost:5000/orders/a2c3a890-6c81-11e9-8383-0242ac1b0005
 
 ###
 

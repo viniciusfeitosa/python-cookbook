@@ -94,7 +94,7 @@ services:
   inventory_service_db:
     build: ./inventory_service/db
     ports:
-      - 5433:5432  # expose ports - HOST:CONTAINER
+      - 5434:5432  # expose ports - HOST:CONTAINER
     healthcheck:
       test: exit 0
     restart: always
